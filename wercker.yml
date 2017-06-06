@@ -1,0 +1,20 @@
+box: tippiq/docker-wercker-build-nodejs
+build:
+  steps:
+    - script:
+        code: |
+            env
+
+deploy:
+  steps:
+    - script:
+        name: compress with GZIP all objects
+        code: find ./ -type f -exec gzip -9 -n {} \; -exec mv {}.gz {} \;
+    - s3sync:
+      key-id: $AWS_ACCESS_KEY_ID
+      key-secret: $AWS_SECRET_ACCESS_KEY
+      bucket-url: $AWS_BUCKET_URL
+      delete-removed: true
+      source-dir: ./lib
+      opts: "--acl-public --add-header=Content-Encoding:gzip"
+
