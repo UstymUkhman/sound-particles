@@ -40,7 +40,7 @@
         margin: 0;
         left: 0;
         top: 0;
-      }      
+      }
     </style>
   </head>
 
@@ -51,10 +51,7 @@
       var canvas = document.getElementById('threeCanvas');
       var visualization = new AudioReactive();
 
-      visualization.init({
-        element: canvas
-      });
-
+      visualization.init(canvas);
       visualization.showStats();
       // visualization.hideStats();
 
