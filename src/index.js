@@ -34,6 +34,9 @@ export default class AudioReactive {
 
     this._name = 'AudioReactive';
     this._audio = 'John Newman - Love Me Again';
+
+    // Song Range: 510.5 --> 621.5
+    // Theorical General Range: (0 ~ 20) --> (800 ~ 20.000) --> (1024 ~ 25.600)
   }
 
   init(element) {
@@ -71,13 +74,11 @@ export default class AudioReactive {
     this._startTime = Date.now();
     this._soundSource.analyser = analyser(this._soundSource);
 
-    console.log(MAX_POWER_RATIO);
-
     this._soundSource.play();
     this._isPlaying = true;
 
     // TweenLite.to(this._startExperienceButton, 0.5, {opacity: 1, display: 'block'});
-    // requestAnimationFrame(this._render.bind(this));
+    requestAnimationFrame(this._render.bind(this));
   }
 
   _onAudioTrackEnded() {
@@ -96,7 +97,7 @@ export default class AudioReactive {
     // sum = Math.max(this._minPower, sum);
 
     sum = sum / freq.length - 1;
-    return sum / this._MAX_POWER_RATIO;
+    return sum / MAX_POWER_RATIO;
   }
 
   _drawAudioAnalysis(value) {
