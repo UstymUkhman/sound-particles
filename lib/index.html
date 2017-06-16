@@ -45,15 +45,14 @@
   </head>
 
   <body>
-    <canvas id="threeCanvas"></canvas>
+    <canvas id="audioreactive"></canvas>
 
     <script type="text/javascript">
-      var canvas = document.getElementById('threeCanvas');
-      var visualization = new AudioReactive();
+      let canvas = document.getElementById('audioreactive');
+      let visualization = new AudioReactive();
 
       visualization.init(canvas);
       visualization.showStats();
-      // visualization.hideStats();
 
       window.addEventListener('resize', function (event) {
         visualization.resize(window.innerWidth, window.innerHeight);
