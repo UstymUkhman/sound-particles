@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import Detector from 'three/examples/js/Detector';
 import Stats from 'three/examples/js/libs/stats.min';
 // import { TweenLite } from 'gsap';
@@ -35,20 +36,88 @@ export default class AudioReactive {
   }
 
   startExperience(study = false) {
-    let AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioContext = new AudioContext();
-    let audioContextAnalyser = audioContext.createAnalyser();
+    this._setupWebGLSchene();
 
-    this._frequencyRange = audioContextAnalyser.frequencyBinCount;
+    // let AudioContext = window.AudioContext || window.webkitAudioContext;
+    // let audioContext = new AudioContext();
+    // let audioContextAnalyser = audioContext.createAnalyser();
 
-    this._getMaxAudioPower();
-    this._experienceStarted = true;
+    // this._frequencyRange = audioContextAnalyser.frequencyBinCount;
 
-    if (study) {
-      this._getAudioValues();
-    } else {
-      this._loadAudioTrack();
-    }
+    // this._getMaxAudioPower();
+    // this._experienceStarted = true;
+
+    // if (study) {
+    //   this._getAudioValues();
+    // } else {
+    //   this._loadAudioTrack();
+    // }
+  }
+
+  _setupWebGLSchene() {
+    this._renderer = PIXI.autoDetectRenderer(
+      this._width, this._height, { transparent: true, antialias: true });
+
+    document.body.appendChild(this._renderer.view);
+
+    this._stage = new PIXI.Stage();
+
+    // const r = 0.5;
+    // const indices = [0, 1, 2];
+    // const positions = [
+    //   0, r, 0,
+    //   r * 0.67, -r, 0,
+    //   -r * 0.67, -r, 0
+    // ];
+
+    // const top = ths._height / 2;
+    // const left = ths._width / 2;
+
+    const positions = [
+      -1, 1, 0,
+      1, 1, 0,
+      0, 0, 0,
+      -1, -1, 0,
+      1, -1, 0
+    ];
+
+    const indices = [0, 1, 2, 2, 3, 0, 1, 2, 4, 4, 2, 3];
+    const colors = [
+      1, 0, 0,
+      0, 1, 0,
+      0, 0, 1,
+      1, 1, 0,
+      1, 0, 0
+    ];
+
+    const geometry = new PIXI.mesh.Geometry()
+      .addAttribute('aVertexPosition', positions, 3)
+      .addAttribute('aColor', colors, 3)
+      .addIndex(indices);
+
+    const vert = require('./shaders/basic.vert');
+    const frag = require('./shaders/basic.frag');
+
+    const uniforms = {
+      color: [1.0, 1.0, 1.0],
+      time: 0
+    };
+
+    const shader = new PIXI.Shader.from(vert, frag, uniforms);
+    const mesh = new PIXI.mesh.RawMesh(geometry, shader);
+
+    this._stage.addChild(mesh);
+
+    // const view = mat4.create();
+    // const cameraControl = new OrbitalCameraControl(view, 0.1);
+
+    this._loop();
+  }
+
+  _loop() {
+    requestAnimationFrame(this._loop.bind(this));
+    this._renderer.render(this._stage);
+    // cameraControl.update();
   }
 
   _getAudioValues() {
@@ -210,8 +279,8 @@ export default class AudioReactive {
     this._width = width;
     this._height = height;
 
-    this._element.width = this._width;
-    this._element.height = this._height;
+    // this._element.width = this._width;
+    // this._element.height = this._height;
   }
 
   destroy() {

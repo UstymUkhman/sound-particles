@@ -16,6 +16,7 @@
   "dependencies": {
     "glsl-blend": "^1.0.3",
     "gsap": "^1.19.1",
+    "pixi.js": "^5.0.0-alpha",
     "three": "^0.84.0",
     "web-audio-analyser": "^2.0.1",
     "xhr-request": "^1.0.1"

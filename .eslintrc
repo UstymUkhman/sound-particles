@@ -60,7 +60,7 @@
     "max-nested-callbacks": 0,
     "max-params": 0,
     "max-statements": 0,
-    "new-cap": [2, { "newIsCap": true, "capIsNew": false }],
+    "new-cap": [2, { "newIsCap": false, "capIsNew": false }],
     "newline-after-var": [2, "always"],
     "new-parens": 2,
     "no-alert": 0,
