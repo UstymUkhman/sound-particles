@@ -12,7 +12,7 @@ uniform float uScale;
 varying vec2 vUV;
 varying vec3 vNormal;
 
-void main() {
+void main(void) {
 	vec3 position = uPosition + aVertexPosition * uScale;
 	gl_Position = proj * view * vec4(position, 1.0);
 

@@ -13,7 +13,7 @@ uniform sampler2D texture;
 // 	return diffuse(N, L) * C;
 // }
 
-void main() {
+void main(void) {
 	gl_FragColor = vec4(0.525, 0.525, 0.525, 1.0);
 
   // Gradient Texture:

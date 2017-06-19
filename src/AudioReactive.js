@@ -36,7 +36,7 @@ export default class AudioReactive {
     }
 
     this.MAX_POWER = (max / this._frequencyRange - 1) / 100;
-    console.log(`Max audio power = ${this.MAX_POWER}`);
+    console.log(`Max audio power = ${this.MAX_POWER * 100}`);
   }
 
   _loadAudioTrack(onPlay, study = false) {
