@@ -139,20 +139,18 @@ export default class SoundParticles {
     this._fbo0.colorTexture.wrapMode = PIXI.WRAP_MODES.CLAMP;
     this._fbo1.colorTexture.wrapMode = PIXI.WRAP_MODES.CLAMP;
 
-    let count = 0;
     let uvParticles = [];
     const fbo0 = this._fbo0;
     const indicesParticles = [];
 
-    for (let i = 0; i < numParticles; i++) {
+    for (let count = 0, i = 0; i < numParticles; i++) {
       for (let j = 0; j < numParticles; j++) {
 
         let u = i / numParticles + 0.5 / numParticles;
         let v = j / numParticles + 0.5 / numParticles;
 
         uvParticles = uvParticles.concat([u, v]);
-        indicesParticles.push(count);
-        count++;
+        indicesParticles.push(count++);
       }
     }
 
@@ -163,17 +161,16 @@ export default class SoundParticles {
     const vsRender = require('./shaders/render.vert');
     const fsRender = require('./shaders/render.frag');
 
-    this._uniformsRender = {
+    const uniforms = {
       textureExtra: fbo0.colorTextures[2],
       texture: fbo0.colorTextures[0],
-      view,
-      proj
+      view, proj
     };
 
-    const shaderRender = PIXI.Shader.from(vsRender, fsRender, this._uniformsRender);
+    const shaderRender = PIXI.Shader.from(vsRender, fsRender, uniforms);
 
     this._particles = new PIXI.mesh.RawMesh(geometryParticles, shaderRender, null, PIXI.DRAW_MODES.POINTS);
-    this._camera = new OrbitalCameraControl(this._view, 15);
+    this._camera = new OrbitalCameraControl(view, 15);
     this._particles.state.depthTest = true;
     this._flop = this._fbo0;
   }
@@ -214,6 +211,8 @@ export default class SoundParticles {
     this._uniformsSim.texturePos = this._flop.colorTextures[0];
     this._uniformsSim.textureVel = this._flop.colorTextures[1];
     this._uniformsSim.textureExtra = this._flop.colorTextures[2];
+
+    // console.log(this._uniformsSim.texturePos, this._uniformsSim.textureVel, this._uniformsSim.textureExtra);
 
     if (this._flop === this._fbo0) {
       this._flop = this._fbo1;
