@@ -5,10 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>AudioReactive</title>
+    <title>SoundParticles</title>
 
     <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
-    <script src="AudioReactive.js"></script>
+    <script src="SoundParticles.js"></script>
 
     <style type="text/css">
       html, body {
@@ -45,21 +45,16 @@
   </head>
 
   <body>
-    <canvas id="audioreactive"></canvas>
-
     <script type="text/javascript">
-      let canvas = document.getElementById('audioreactive');
-      let visualization = new AudioReactive();
-
-      visualization.init(canvas);
-      // visualization.showStats();
+      let experiment = new SoundParticles();
+      // experiment.showStats();
 
       window.addEventListener('resize', function (event) {
-        visualization.resize(window.innerWidth, window.innerHeight);
+        experiment.resize(window.innerWidth, window.innerHeight);
       });
 
-      visualization.resize(window.innerWidth, window.innerHeight);
-      visualization.startExperience();
+      experiment.startExperience();
+      experiment.resize(window.innerWidth, window.innerHeight);
     </script>
   </body>
 </html>
