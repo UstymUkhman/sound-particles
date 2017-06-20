@@ -13,25 +13,6 @@ const RAD = Math.PI / 180;
 const PI_2 = Math.PI / 2;
 const PARTICLES = 64;
 
-/* function fibonacci_sphere(samples) {
-  var rnd = Math.random() * samples;
-  var points = []
-  var offset = 2 / samples;
-  var increment = Math.PI * (3 - Math.sqrt(5));
-
-  for (var i = 0; i < samples; i++) {
-    var y = ((i * offset) - 1) + (offset / 2)
-    var r = Math.sqrt(1 - Math.pow(y, 2))
-
-    var phi = ((i + rnd) % samples) * increment;
-
-    var x = Math.cos(phi) * r;
-    var z = Math.sin(phi) * r;
-
-    console.log(x, y, z);
-  }
-} */
-
 export default class SoundParticles {
 
   constructor() {
@@ -72,6 +53,30 @@ export default class SoundParticles {
 
     this._stage = new PIXI.Container();
     this._stage.addChild(mesh);
+  }
+
+  _distributeParticles() {
+    let points = [];
+    let indices = [];
+
+    let offset = 2.0 / PARTICLES;
+    let rnd = Math.random() * PARTICLES;
+    let increment = Math.PI * (3.0 - Math.sqrt(5));
+
+    for (let i = 0; i < PARTICLES; i++) {
+      let phi = ((i + rnd) % PARTICLES) * increment;
+      let d = ((i * offset) - 1) + (offset / 2);
+      let r = Math.sqrt(1 - Math.pow(d, 2));
+
+      let x = Math.abs(Math.cos(phi) * r);
+      let z = Math.abs(Math.sin(phi) * r);
+      let y = Math.abs(d);
+
+      points = points.concat([x, y, z]);
+      indices.push(i);
+    }
+
+    return points;
   }
 
   _createSphere() {
@@ -173,9 +178,30 @@ export default class SoundParticles {
       }
     }
 
+    let points = [];
+    let indices = [];
+
+    let offset = 2.0 / PARTICLES;
+    let rnd = Math.random() * PARTICLES;
+    let increment = Math.PI * (3.0 - Math.sqrt(5));
+
+    for (let i = 0; i < PARTICLES; i++) {
+      let y = ((i * offset) - 1) + (offset / 2);
+      let r = Math.sqrt(1 - Math.pow(y, 2));
+
+      let phi = ((i + rnd) % PARTICLES) * increment;
+
+      let x = Math.cos(phi) * r;
+      let z = Math.sin(phi) * r;
+
+      points = points.concat([x, y, z]);
+      indices.push(i);
+    }
+
     const geometryParticles = new PIXI.mesh.Geometry()
             .addAttribute('aTextureCoord', uvParticles, 2)
-            .addIndex(indicesParticles);
+            .addAttribute('positions', points, 3)
+            .addIndex(indices);
 
     const vsRender = require('./shaders/render.vert');
     const fsRender = require('./shaders/render.frag');
@@ -183,6 +209,7 @@ export default class SoundParticles {
     const uniforms = {
       textureExtra: fbo0.colorTextures[2],
       texture: fbo0.colorTextures[0],
+      positions: points,
       view, proj
     };
 
@@ -206,8 +233,8 @@ export default class SoundParticles {
       .addAttribute('aTextureCoord', squareUVs, 2)
       .addIndex(squareIndices);
 
-    const vsSim = require('./shaders/sim.vert');
-    const fsSim = require('./shaders/sim.frag');
+    const vsSim = require('./shaders/freq.vert');
+    const fsSim = require('./shaders/freq.frag');
 
     this._uniformsSim = {
       time: Math.random() * 255,

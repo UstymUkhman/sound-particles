@@ -1,6 +1,7 @@
 precision highp float;
 
 attribute vec2 aTextureCoord;
+attribute vec3 positions;
 
 uniform mat4 view;
 uniform mat4 proj;
@@ -11,10 +12,11 @@ uniform sampler2D textureExtra;
 varying vec3 vColor;
 
 void main(void) {
-	vec3 position = texture2D(texture, aTextureCoord).rgb;
+	// vec3 position = texture2D(texture, aTextureCoord).rgb;
   vec3 extra = texture2D(textureExtra, aTextureCoord).rgb;
 
-  gl_Position = proj * view * vec4(position, 1.0);
+  // gl_Position = proj * view * vec4(position, 1.0);
+  gl_Position = proj * view * vec4(positions, 1.0);
   gl_PointSize = 4.0 + extra.b * 6.0;
   vColor = extra;
 }
