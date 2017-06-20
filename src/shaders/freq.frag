@@ -4,8 +4,8 @@ precision highp float;
 
 varying vec2 vTextureCoord;
 
-uniform sampler2D textureVel;
 uniform sampler2D texturePos;
+uniform sampler2D textureVel;
 uniform sampler2D textureExtra;
 
 uniform float time;

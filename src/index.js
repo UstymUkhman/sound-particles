@@ -11,7 +11,7 @@ import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
 const PI_2 = Math.PI / 2;
-const PARTICLES = 128;
+const PARTICLES = 1024;
 
 export default class SoundParticles {
 
@@ -68,9 +68,7 @@ export default class SoundParticles {
   }
 
   _createParticles() {
-    let UVsIndices = [];
     let particlesUVs = [];
-
     let particlesPoints = [];
     let particlesIndices = [];
 
@@ -78,27 +76,23 @@ export default class SoundParticles {
     let random = Math.random() * PARTICLES;
     let step = Math.PI * (3.0 - Math.sqrt(5));
 
-    for (let count = 0, i = 0; i < PARTICLES; i++) {
+    for (let i = 0; i < PARTICLES; i++) {
       // Position Mapping (on sphere)
-      let y = ((i * particlesOffset) - 1) + (particlesOffset / 2);
-      let r = Math.sqrt(1 - Math.pow(y, 2));
+      const y = ((i * particlesOffset) - 1) + (particlesOffset / 2);
+      const r = Math.sqrt(1 - Math.pow(y, 2));
 
-      let phi = ((i + random) % PARTICLES) * step;
+      const phi = ((i + random) % PARTICLES) * step;
 
-      let x = Math.cos(phi) * r;
-      let z = Math.sin(phi) * r;
+      const x = Math.cos(phi) * r;
+      const z = Math.sin(phi) * r;
 
       particlesPoints = particlesPoints.concat([x, y, z]);
       particlesIndices.push(i);
 
       // UV Mapping
-      for (let j = 0; j < PARTICLES; j++) {
-        let u = i / PARTICLES + 0.5 / PARTICLES;
-        let v = j / PARTICLES + 0.5 / PARTICLES;
+      const uv = i / PARTICLES;
 
-        particlesUVs = particlesUVs.concat([u, v]);
-        UVsIndices.push(count++);
-      }
+      particlesUVs = particlesUVs.concat([uv, uv]);
     }
 
     const fbo0 = this._fbo0;
@@ -106,14 +100,13 @@ export default class SoundParticles {
     const proj = this._proj;
 
     const uniforms = {
-      textureExtra: fbo0.colorTextures[2],
-      texture: fbo0.colorTextures[0],
+      texture: fbo0.colorTextures[2],
       positions: particlesPoints,
       view, proj
     };
 
-    const vsRender = require('./shaders/render.vert');
-    const fsRender = require('./shaders/render.frag');
+    const vsRender = require('./shaders/particles.vert');
+    const fsRender = require('./shaders/particles.frag');
 
     const particlesGeometry = new PIXI.mesh.Geometry()
       .addAttribute('aTextureCoord', particlesUVs, 2)
@@ -162,20 +155,22 @@ export default class SoundParticles {
     const particles = this._createParticles();
 
     particles.state.depthTest = true;
-
-    // this._camera = new OrbitalCameraControl(this._view, 5);
     this._stage.addChild(particles);
     this._flop = this._fbo0;
 
     const vsSim = require('./shaders/freq.vert');
     const fsSim = require('./shaders/freq.frag');
-    const fbo0 = this._fbo0;
+    // const fbo0 = this._fbo0;
 
-    this._uniformsSim = {
+    /* this._uniformsSim = {
       time: Math.random() * 255,
       texturePos: fbo0.colorTextures[0],
       textureVel: fbo0.colorTextures[1],
       textureExtra: fbo0.colorTextures[2]
+    }; */
+
+    this._uniformsSim = {
+      time: 0
     };
 
     const squareCoords = [-1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0];
@@ -245,9 +240,9 @@ export default class SoundParticles {
         antialias: true
       });
 
+    this._camera = new OrbitalCameraControl(this._view, 5);
     document.body.appendChild(this._renderer.view);
 
-    this._camera = new OrbitalCameraControl(this._view, 5);
     // this._createSphere();
     this._createParticlesSphere();
 
