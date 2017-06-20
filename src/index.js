@@ -11,6 +11,26 @@ import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
 const PI_2 = Math.PI / 2;
+const PARTICLES = 64;
+
+/* function fibonacci_sphere(samples) {
+  var rnd = Math.random() * samples;
+  var points = []
+  var offset = 2 / samples;
+  var increment = Math.PI * (3 - Math.sqrt(5));
+
+  for (var i = 0; i < samples; i++) {
+    var y = ((i * offset) - 1) + (offset / 2)
+    var r = Math.sqrt(1 - Math.pow(y, 2))
+
+    var phi = ((i + rnd) % samples) * increment;
+
+    var x = Math.cos(phi) * r;
+    var z = Math.sin(phi) * r;
+
+    console.log(x, y, z);
+  }
+} */
 
 export default class SoundParticles {
 
@@ -95,7 +115,6 @@ export default class SoundParticles {
   }
 
   _createParticles() {
-    const numParticles = 64 * 2;
     const random = function (min, max) {
       return min + Math.random() * (max - min);
     };
@@ -107,9 +126,9 @@ export default class SoundParticles {
     mat4.perspective(proj, 45 * RAD, ratio, 0.1, 100);
 
     const range = 4;
-    const posData = new Float32Array(4 * numParticles * numParticles);
-    const velData = new Float32Array(4 * numParticles * numParticles);
-    const extraData = new Float32Array(4 * numParticles * numParticles);
+    const posData = new Float32Array(4 * PARTICLES * PARTICLES);
+    const velData = new Float32Array(4 * PARTICLES * PARTICLES);
+    const extraData = new Float32Array(4 * PARTICLES * PARTICLES);
 
     for (let i = 0; i < posData.length; i += 4) {
       posData[i + 0] = random(-range, range);
@@ -123,15 +142,15 @@ export default class SoundParticles {
       extraData[i + 3] = 1;
     }
 
-    this._fbo0 = new PIXI.FrameBuffer(numParticles, numParticles)
-      .addColorTexture(0, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, posData))
-      .addColorTexture(1, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, velData))
-      .addColorTexture(2, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, extraData));
+    this._fbo0 = new PIXI.FrameBuffer(PARTICLES, PARTICLES)
+      .addColorTexture(0, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, posData))
+      .addColorTexture(1, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, velData))
+      .addColorTexture(2, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, extraData));
 
-    this._fbo1 = new PIXI.FrameBuffer(numParticles, numParticles)
-      .addColorTexture(0, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, posData))
-      .addColorTexture(1, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, velData))
-      .addColorTexture(2, new PIXI.BaseTexture.fromFloat32Array(numParticles, numParticles, extraData));
+    this._fbo1 = new PIXI.FrameBuffer(PARTICLES, PARTICLES)
+      .addColorTexture(0, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, posData))
+      .addColorTexture(1, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, velData))
+      .addColorTexture(2, new PIXI.BaseTexture.fromFloat32Array(PARTICLES, PARTICLES, extraData));
 
     this._fbo0.colorTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
     this._fbo1.colorTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -143,11 +162,11 @@ export default class SoundParticles {
     const fbo0 = this._fbo0;
     const indicesParticles = [];
 
-    for (let count = 0, i = 0; i < numParticles; i++) {
-      for (let j = 0; j < numParticles; j++) {
+    for (let count = 0, i = 0; i < PARTICLES; i++) {
+      for (let j = 0; j < PARTICLES; j++) {
 
-        let u = i / numParticles + 0.5 / numParticles;
-        let v = j / numParticles + 0.5 / numParticles;
+        let u = i / PARTICLES + 0.5 / PARTICLES;
+        let v = j / PARTICLES + 0.5 / PARTICLES;
 
         uvParticles = uvParticles.concat([u, v]);
         indicesParticles.push(count++);
@@ -170,7 +189,7 @@ export default class SoundParticles {
     const shaderRender = PIXI.Shader.from(vsRender, fsRender, uniforms);
 
     this._particles = new PIXI.mesh.RawMesh(geometryParticles, shaderRender, null, PIXI.DRAW_MODES.POINTS);
-    this._camera = new OrbitalCameraControl(view, 15);
+    this._camera = new OrbitalCameraControl(view, 25);
     this._particles.state.depthTest = true;
     this._flop = this._fbo0;
   }
@@ -211,8 +230,6 @@ export default class SoundParticles {
     this._uniformsSim.texturePos = this._flop.colorTextures[0];
     this._uniformsSim.textureVel = this._flop.colorTextures[1];
     this._uniformsSim.textureExtra = this._flop.colorTextures[2];
-
-    // console.log(this._uniformsSim.texturePos, this._uniformsSim.textureVel, this._uniformsSim.textureExtra);
 
     if (this._flop === this._fbo0) {
       this._flop = this._fbo1;

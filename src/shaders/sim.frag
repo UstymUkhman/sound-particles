@@ -146,21 +146,21 @@ void main(void) {
   vec3 vel = texture2D(textureVel, vTextureCoord).rgb;
   vec3 extra = texture2D(textureExtra, vTextureCoord).rgb;
 
-  float posOffset = 0.2 * mix(extra.r, 1.0, .25);
-  vec3 acc = curlNoise(pos * posOffset + time * 0.5);
-  vel += acc * 0.01 * (mix(extra.g, 1.0, .5));
+  // float posOffset = 0.2 * mix(extra.r, 1.0, .25);
+  // vec3 acc = curlNoise(pos * posOffset + time * 0.5);
+  // vel += acc * 0.01 * (mix(extra.g, 1.0, .5));
 
-  const float maxRadius = 4.0;
-  float dist = length(pos);
+  // const float maxRadius = 1.0;
+  // float dist = length(pos);
 
-  if (dist > maxRadius) {
-  	vec3 dir = normalize(pos);
-  	float f = (dist - maxRadius) * 0.002;
-  	vel -= dir * f; 
-  }
+  // if (dist > maxRadius) {
+  // 	vec3 dir = normalize(pos);
+  // 	float f = (dist - maxRadius) * 0.002;
+  // 	vel -= dir * f; 
+  // }
 
-  pos += vel;
-  vel *= decrease;
+  // pos += vel;
+  // vel *= decrease;
 
   gl_FragData[0] = vec4(pos, 1.0);
   gl_FragData[1] = vec4(vel, 1.0);
