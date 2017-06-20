@@ -11,7 +11,7 @@ import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
 const PI_2 = Math.PI / 2;
-const PARTICLES = 64;
+const PARTICLES = 128;
 
 export default class SoundParticles {
 
@@ -21,67 +21,20 @@ export default class SoundParticles {
 
     this._height = window.innerHeight;
     this._width = window.innerWidth;
+
+    this._ratio = this._width / this._height;
     this._destroyed = false;
 
     return !!Detector.webgl;
   }
 
-  _setupWebGLSchene() {
-    this._uniforms = { color: 0.0 };
-
-    const positions = [
-      -1, 1, 0,
-      1, 1, 0,
-      0, 0, 0,
-      -1, -1, 0,
-      1, -1, 0
-    ];
-
-    const indices = [
-      0, 1, 2,
-      2, 3, 0,
-      1, 2, 4,
-      4, 2, 3
-    ];
-
-    const vert = require('./shaders/basic.vert');
-    const frag = require('./shaders/basic.frag');
-
-    const geometry = new PIXI.mesh.Geometry().addAttribute('vertexPositions', positions, 3).addIndex(indices);
-    const shader = new PIXI.Shader.from(vert, frag, this._uniforms);
-    const mesh = new PIXI.mesh.RawMesh(geometry, shader);
-
-    this._stage = new PIXI.Container();
-    this._stage.addChild(mesh);
-  }
-
-  _distributeParticles() {
-    let points = [];
-    let indices = [];
-
-    let offset = 2.0 / PARTICLES;
-    let rnd = Math.random() * PARTICLES;
-    let increment = Math.PI * (3.0 - Math.sqrt(5));
-
-    for (let i = 0; i < PARTICLES; i++) {
-      let phi = ((i + rnd) % PARTICLES) * increment;
-      let d = ((i * offset) - 1) + (offset / 2);
-      let r = Math.sqrt(1 - Math.pow(d, 2));
-
-      let x = Math.abs(Math.cos(phi) * r);
-      let z = Math.abs(Math.sin(phi) * r);
-      let y = Math.abs(d);
-
-      points = points.concat([x, y, z]);
-      indices.push(i);
-    }
-
-    return points;
+  _getRandomFromRange(min, max) {
+    return min + Math.random() * (max - min);
   }
 
   _createSphere() {
-    this._view = mat4.create();
-    this._proj = mat4.create();
+    // this._view = mat4.create();
+    // this._proj = mat4.create();
 
     this._screenPos = vec3.create();
     this._camera = new OrbitalCameraControl(this._view, 50);
@@ -93,52 +46,95 @@ export default class SoundParticles {
               .addAttribute('aUV', uvs, 2)
               .addIndex(indices);
 
-    const ratio = this._width / this._height;
-
-    mat4.perspective(this._proj, 45 * RAD, ratio, 0.1, 100);
+    // mat4.perspective(this._proj, 45 * RAD, this._ratio, 0.1, 100);
 
     const texture = PIXI.Texture.from('assets/gradient.jpg');
     const view = this._view;
     const proj = this._proj;
 
     this._uniforms = {
-      uPosition: [0, 0, 0],
-      uScale: 10,
-      texture,
-      view,
-      proj
+      uPosition: [0, 0, 0], uScale: 10,
+      texture, view, proj
     };
 
     const vs = require('./shaders/sphere.vert');
     const fs = require('./shaders/sphere.frag');
 
     const shader = PIXI.Shader.from(vs, fs, this._uniforms);
-    const mesh = new PIXI.mesh.RawMesh(geometry, shader);
+    const sphere = new PIXI.mesh.RawMesh(geometry, shader);
 
-    mesh.state.depthTest = true;
-    return mesh;
+    sphere.state.depthTest = true;
+    this._stage.addChild(sphere);
   }
 
   _createParticles() {
-    const random = function (min, max) {
-      return min + Math.random() * (max - min);
+    let UVsIndices = [];
+    let particlesUVs = [];
+
+    let particlesPoints = [];
+    let particlesIndices = [];
+
+    let particlesOffset = 2.0 / PARTICLES;
+    let random = Math.random() * PARTICLES;
+    let step = Math.PI * (3.0 - Math.sqrt(5));
+
+    for (let count = 0, i = 0; i < PARTICLES; i++) {
+      // Position Mapping (on sphere)
+      let y = ((i * particlesOffset) - 1) + (particlesOffset / 2);
+      let r = Math.sqrt(1 - Math.pow(y, 2));
+
+      let phi = ((i + random) % PARTICLES) * step;
+
+      let x = Math.cos(phi) * r;
+      let z = Math.sin(phi) * r;
+
+      particlesPoints = particlesPoints.concat([x, y, z]);
+      particlesIndices.push(i);
+
+      // UV Mapping
+      for (let j = 0; j < PARTICLES; j++) {
+        let u = i / PARTICLES + 0.5 / PARTICLES;
+        let v = j / PARTICLES + 0.5 / PARTICLES;
+
+        particlesUVs = particlesUVs.concat([u, v]);
+        UVsIndices.push(count++);
+      }
+    }
+
+    const fbo0 = this._fbo0;
+    const view = this._view;
+    const proj = this._proj;
+
+    const uniforms = {
+      textureExtra: fbo0.colorTextures[2],
+      texture: fbo0.colorTextures[0],
+      positions: particlesPoints,
+      view, proj
     };
 
-    const view = mat4.create();
-    const proj = mat4.create();
-    const ratio = this._width / this._height;
+    const vsRender = require('./shaders/render.vert');
+    const fsRender = require('./shaders/render.frag');
 
-    mat4.perspective(proj, 45 * RAD, ratio, 0.1, 100);
+    const particlesGeometry = new PIXI.mesh.Geometry()
+      .addAttribute('aTextureCoord', particlesUVs, 2)
+      .addAttribute('positions', particlesPoints, 3)
+      .addIndex(particlesIndices);
 
+    const shaderRender = PIXI.Shader.from(vsRender, fsRender, uniforms);
+
+    return new PIXI.mesh.RawMesh(particlesGeometry, shaderRender, null, PIXI.DRAW_MODES.POINTS);
+  }
+
+  _createParticlesSphere() {
     const range = 4;
     const posData = new Float32Array(4 * PARTICLES * PARTICLES);
     const velData = new Float32Array(4 * PARTICLES * PARTICLES);
     const extraData = new Float32Array(4 * PARTICLES * PARTICLES);
 
     for (let i = 0; i < posData.length; i += 4) {
-      posData[i + 0] = random(-range, range);
-      posData[i + 1] = random(-range, range);
-      posData[i + 2] = random(-range, range);
+      posData[i + 0] = this._getRandomFromRange(-range, range);
+      posData[i + 1] = this._getRandomFromRange(-range, range);
+      posData[i + 2] = this._getRandomFromRange(-range, range);
       posData[i + 3] = 1;
 
       extraData[i + 0] = Math.random();
@@ -163,78 +159,17 @@ export default class SoundParticles {
     this._fbo0.colorTexture.wrapMode = PIXI.WRAP_MODES.CLAMP;
     this._fbo1.colorTexture.wrapMode = PIXI.WRAP_MODES.CLAMP;
 
-    let uvParticles = [];
-    const fbo0 = this._fbo0;
-    const indicesParticles = [];
+    const particles = this._createParticles();
 
-    for (let count = 0, i = 0; i < PARTICLES; i++) {
-      for (let j = 0; j < PARTICLES; j++) {
+    particles.state.depthTest = true;
 
-        let u = i / PARTICLES + 0.5 / PARTICLES;
-        let v = j / PARTICLES + 0.5 / PARTICLES;
-
-        uvParticles = uvParticles.concat([u, v]);
-        indicesParticles.push(count++);
-      }
-    }
-
-    let points = [];
-    let indices = [];
-
-    let offset = 2.0 / PARTICLES;
-    let rnd = Math.random() * PARTICLES;
-    let increment = Math.PI * (3.0 - Math.sqrt(5));
-
-    for (let i = 0; i < PARTICLES; i++) {
-      let y = ((i * offset) - 1) + (offset / 2);
-      let r = Math.sqrt(1 - Math.pow(y, 2));
-
-      let phi = ((i + rnd) % PARTICLES) * increment;
-
-      let x = Math.cos(phi) * r;
-      let z = Math.sin(phi) * r;
-
-      points = points.concat([x, y, z]);
-      indices.push(i);
-    }
-
-    const geometryParticles = new PIXI.mesh.Geometry()
-            .addAttribute('aTextureCoord', uvParticles, 2)
-            .addAttribute('positions', points, 3)
-            .addIndex(indices);
-
-    const vsRender = require('./shaders/render.vert');
-    const fsRender = require('./shaders/render.frag');
-
-    const uniforms = {
-      textureExtra: fbo0.colorTextures[2],
-      texture: fbo0.colorTextures[0],
-      positions: points,
-      view, proj
-    };
-
-    const shaderRender = PIXI.Shader.from(vsRender, fsRender, uniforms);
-
-    this._particles = new PIXI.mesh.RawMesh(geometryParticles, shaderRender, null, PIXI.DRAW_MODES.POINTS);
-    this._camera = new OrbitalCameraControl(view, 25);
-    this._particles.state.depthTest = true;
+    // this._camera = new OrbitalCameraControl(this._view, 5);
+    this._stage.addChild(particles);
     this._flop = this._fbo0;
-  }
-
-  _moveParticles() {
-    let squareCoords = [-1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0];
-    let squareUVs = [0, 1, 1, 1, 1, 0, 0, 0];
-    let squareIndices = [0, 1, 2, 0, 2, 3];
-
-    const fbo0 = this._fbo0;
-
-    const geometryQuad = new PIXI.mesh.Geometry()
-      .addAttribute('vertexPositions', squareCoords, 3)
-      .addAttribute('aTextureCoord', squareUVs, 2)
-      .addIndex(squareIndices);
 
     const vsSim = require('./shaders/freq.vert');
     const fsSim = require('./shaders/freq.frag');
+    const fbo0 = this._fbo0;
 
     this._uniformsSim = {
       time: Math.random() * 255,
@@ -242,6 +177,15 @@ export default class SoundParticles {
       textureVel: fbo0.colorTextures[1],
       textureExtra: fbo0.colorTextures[2]
     };
+
+    const squareCoords = [-1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0];
+    const squareUVs = [0, 1, 1, 1, 1, 0, 0, 0];
+    const squareIndices = [0, 1, 2, 0, 2, 3];
+
+    const geometryQuad = new PIXI.mesh.Geometry()
+      .addAttribute('vertexPositions', squareCoords, 3)
+      .addAttribute('aTextureCoord', squareUVs, 2)
+      .addIndex(squareIndices);
 
     const shaderSim = PIXI.Shader.from(vsSim, fsSim, this._uniformsSim);
 
@@ -289,18 +233,24 @@ export default class SoundParticles {
   }
 
   startExperience() {
-    this._renderer = PIXI.autoDetectRenderer(this._width, this._height, { transparent: true, antialias: true });
+    this._view = mat4.create();
+    this._proj = mat4.create();
+
+    mat4.perspective(this._proj, 45 * RAD, this._ratio, 0.1, 100);
+
+    this._stage = new PIXI.Container();
+    this._renderer = PIXI.autoDetectRenderer(
+      this._width, this._height, {
+        transparent: true,
+        antialias: true
+      });
+
     document.body.appendChild(this._renderer.view);
 
-    this._createParticles();
+    this._camera = new OrbitalCameraControl(this._view, 5);
+    // this._createSphere();
+    this._createParticlesSphere();
 
-    // const sphere = this._createSphere();
-    // this._setupWebGLSchene();
-    this._stage = new PIXI.Container();
-    this._moveParticles();
-
-    // this._stage.addChild(sphere);
-    this._stage.addChild(this._particles);
     this._render();
 
     // this._audio.play(() => {
@@ -326,6 +276,8 @@ export default class SoundParticles {
 
     this._renderer.view.width = this._width;
     this._renderer.view.height = this._height;
+
+    this._ratio = this._width / this._height;
   }
 
   destroy() {
