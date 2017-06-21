@@ -158,6 +158,10 @@ export default class AudioReactive {
   }
 
   getFrequencyValues() {
-    return this._soundSource.analyser.frequencies();
+    if (this._soundSource.analyser) {
+      return this._soundSource.analyser.frequencies();
+    }
+
+    return null;
   }
 }

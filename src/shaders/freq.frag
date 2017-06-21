@@ -2,11 +2,14 @@
 
 precision highp float;
 
+varying float pIndex;
 varying vec2 vTextureCoord;
 
 uniform sampler2D texturePos;
 uniform sampler2D textureVel;
 uniform sampler2D textureExtra;
+
+// uniform int frequencies[1024];
 
 uniform float time;
 
@@ -161,6 +164,12 @@ void main(void) {
 
   // pos += vel;
   // vel *= decrease;
+
+  // if (pIndex > 100.0) {
+  //   pos = vec3(0.0, 0.0, 0.0);
+  //   vel = vec3(0.0, 0.0, 0.0);
+  //   extra = vec3(0.0, 0.0, 0.0);
+  // }
 
   gl_FragData[0] = vec4(pos, 1.0);
   gl_FragData[1] = vec4(vel, 1.0);

@@ -68,9 +68,9 @@ export default class SoundParticles {
   }
 
   _createParticles() {
+    let indices = [];
     let particlesUVs = [];
     let particlesPoints = [];
-    let particlesIndices = [];
 
     let particlesOffset = 2.0 / PARTICLES;
     let random = Math.random() * PARTICLES;
@@ -87,7 +87,7 @@ export default class SoundParticles {
       const z = Math.sin(phi) * r;
 
       particlesPoints = particlesPoints.concat([x, y, z]);
-      particlesIndices.push(i);
+      indices.push(i);
 
       // UV Mapping
       const uv = i / PARTICLES;
@@ -99,9 +99,18 @@ export default class SoundParticles {
     const view = this._view;
     const proj = this._proj;
 
-    const uniforms = {
+    let frequencies = [];
+
+    for (let i = 0; i < PARTICLES; i++) {
+      frequencies.push(i / PARTICLES);
+    }
+
+    // frequencies[100] = 1.0;
+
+    this._uniforms = {
       texture: fbo0.colorTextures[2],
       positions: particlesPoints,
+      frequencies: frequencies,
       view, proj
     };
 
@@ -111,9 +120,10 @@ export default class SoundParticles {
     const particlesGeometry = new PIXI.mesh.Geometry()
       .addAttribute('aTextureCoord', particlesUVs, 2)
       .addAttribute('positions', particlesPoints, 3)
-      .addIndex(particlesIndices);
+      .addAttribute('index', indices)
+      .addIndex(indices);
 
-    const shaderRender = PIXI.Shader.from(vsRender, fsRender, uniforms);
+    const shaderRender = PIXI.Shader.from(vsRender, fsRender, this._uniforms);
 
     return new PIXI.mesh.RawMesh(particlesGeometry, shaderRender, null, PIXI.DRAW_MODES.POINTS);
   }
@@ -222,6 +232,12 @@ export default class SoundParticles {
 
     // this._uniforms.color = this._audio.getAverageValue();
 
+    // const frequencies = this._audio.getFrequencyValues();
+
+    // if (frequencies) {
+    //   this._uniforms.frequencies = frequencies;
+    // }
+
     this._camera.update();
     this._renderer.render(this._stage);
     requestAnimationFrame(this._render.bind(this));
@@ -246,11 +262,9 @@ export default class SoundParticles {
     // this._createSphere();
     this._createParticlesSphere();
 
+    // this._audio.play(this._render.bind(this));
+    // this._audio.play();
     this._render();
-
-    // this._audio.play(() => {
-    //   this._render();
-    // });
   }
 
   showStats() {
