@@ -69,6 +69,7 @@ export default class SoundParticles {
 
   _createParticles() {
     let indices = [];
+    let frequencies = [];
     let particlesUVs = [];
     let particlesPoints = [];
 
@@ -77,35 +78,24 @@ export default class SoundParticles {
     let step = Math.PI * (3.0 - Math.sqrt(5));
 
     for (let i = 0; i < PARTICLES; i++) {
-      // Position Mapping (on sphere)
       const y = ((i * particlesOffset) - 1) + (particlesOffset / 2);
       const r = Math.sqrt(1 - Math.pow(y, 2));
 
       const phi = ((i + random) % PARTICLES) * step;
+      const uv = i / PARTICLES;
 
       const x = Math.cos(phi) * r;
       const z = Math.sin(phi) * r;
 
       particlesPoints = particlesPoints.concat([x, y, z]);
-      indices.push(i);
-
-      // UV Mapping
-      const uv = i / PARTICLES;
-
       particlesUVs = particlesUVs.concat([uv, uv]);
+      frequencies.push(i / PARTICLES);
+      indices.push(i);
     }
 
     const fbo0 = this._fbo0;
     const view = this._view;
     const proj = this._proj;
-
-    let frequencies = [];
-
-    for (let i = 0; i < PARTICLES; i++) {
-      frequencies.push(i / PARTICLES);
-    }
-
-    // frequencies[100] = 1.0;
 
     this._uniforms = {
       texture: fbo0.colorTextures[2],
@@ -231,12 +221,7 @@ export default class SoundParticles {
     this._renderParticles();
 
     // this._uniforms.color = this._audio.getAverageValue();
-
-    // const frequencies = this._audio.getFrequencyValues();
-
-    // if (frequencies) {
-    //   this._uniforms.frequencies = frequencies;
-    // }
+    this._uniforms.frequencies = this._audio.getFrequencyValues();
 
     this._camera.update();
     this._renderer.render(this._stage);
@@ -262,9 +247,9 @@ export default class SoundParticles {
     // this._createSphere();
     this._createParticlesSphere();
 
-    // this._audio.play(this._render.bind(this));
+    this._audio.play(this._render.bind(this));
     // this._audio.play();
-    this._render();
+    // this._render();
   }
 
   showStats() {

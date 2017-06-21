@@ -145,9 +145,9 @@ vec3 curlNoise(vec3 p) {
 const float decrease = 0.96;
 
 void main(void) {
-  vec3 pos = texture2D(texturePos, vTextureCoord).rgb;
-  vec3 vel = texture2D(textureVel, vTextureCoord).rgb;
-  vec3 extra = texture2D(textureExtra, vTextureCoord).rgb;
+  // vec3 pos = texture2D(texturePos, vTextureCoord).rgb;
+  // vec3 vel = texture2D(textureVel, vTextureCoord).rgb;
+  // vec3 extra = texture2D(textureExtra, vTextureCoord).rgb;
 
   // float posOffset = 0.2 * mix(extra.r, 1.0, .25);
   // vec3 acc = curlNoise(pos * posOffset + time * 0.5);
@@ -171,7 +171,9 @@ void main(void) {
   //   extra = vec3(0.0, 0.0, 0.0);
   // }
 
-  gl_FragData[0] = vec4(pos, 1.0);
-  gl_FragData[1] = vec4(vel, 1.0);
-  gl_FragData[2] = vec4(extra, 1.0);
+  // gl_FragData[0] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+  // gl_FragData[1] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+  // gl_FragData[2] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+
+  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

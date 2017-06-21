@@ -2,6 +2,7 @@
 // Theorical Frequency Range: (0 ~ 20) --> (800 ~ 20.000) --> (1024 ~ 25.600)
 
 const analyser = require('web-audio-analyser');
+const TOT_FREQUENCIES = 1024; // this._soundSource.analyser.freqdata.length
 const MAX_DECIBELS = 255;
 
 export default class AudioReactive {
@@ -158,10 +159,13 @@ export default class AudioReactive {
   }
 
   getFrequencyValues() {
-    if (this._soundSource.analyser) {
-      return this._soundSource.analyser.frequencies();
+    let frequencies = [];
+    let analysed = this._soundSource.analyser.frequencies();
+
+    for (let i = 0; i < analysed.length; i++) {
+      frequencies.push(analysed[i] / TOT_FREQUENCIES);
     }
 
-    return null;
+    return frequencies;
   }
 }

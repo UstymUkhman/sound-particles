@@ -1,3 +1,5 @@
+#extension GL_EXT_draw_buffers : require
+
 precision highp float;
 
 // uniform int frequencies[1024];
@@ -19,6 +21,10 @@ void main(void) {
   // } else {
   //   color = vec3(1.0, 1.0, 1.0);
   // }
+
+  // gl_FragData[0] = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+  // gl_FragData[1] = vec4(vec3(0.0, 1.0, 0.0), 1.0);
+  // gl_FragData[2] = vec4(vec3(0.0, 0.0, 1.0), 1.0);
 
   gl_FragColor = vColor; // vec4(vColor, 1.0);
 }
