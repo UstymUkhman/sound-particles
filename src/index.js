@@ -71,23 +71,32 @@ export default class SoundParticles {
     let indices = [];
     let frequencies = [];
     let particlesUVs = [];
-    let particlesPoints = [];
+
+    const MAX_FREQ = 2;
+    let minFrequencies = [];
+    let maxFrequencies = [];
 
     let particlesOffset = 2.0 / PARTICLES;
     let random = Math.random() * PARTICLES;
-    let step = Math.PI * (3.0 - Math.sqrt(5));
+    let step = Math.PI * (5.0 - Math.sqrt(5)); // 8.0 - ...
 
     for (let i = 0; i < PARTICLES; i++) {
-      const y = ((i * particlesOffset) - 1) + (particlesOffset / 2);
-      const r = Math.sqrt(1 - Math.pow(y, 2));
+      const minY = ((i * particlesOffset) - 1) + (particlesOffset / 2);
+      const radius = Math.sqrt(1 - Math.pow(minY, 2));
 
       const phi = ((i + random) % PARTICLES) * step;
       const uv = i / PARTICLES;
 
-      const x = Math.cos(phi) * r;
-      const z = Math.sin(phi) * r;
+      const minX = Math.cos(phi) * radius;
+      const minZ = Math.sin(phi) * radius;
 
-      particlesPoints = particlesPoints.concat([x, y, z]);
+      const maxX = minX * MAX_FREQ;
+      const maxY = minY * MAX_FREQ;
+      const maxZ = minZ * MAX_FREQ;
+
+      maxFrequencies = maxFrequencies.concat([maxX, maxY, maxZ]);
+      minFrequencies = minFrequencies.concat([minX, minY, minZ]);
+
       particlesUVs = particlesUVs.concat([uv, uv]);
       frequencies.push(i / PARTICLES);
       indices.push(i);
@@ -99,17 +108,19 @@ export default class SoundParticles {
 
     this._uniforms = {
       texture: fbo0.colorTextures[2],
-      positions: particlesPoints,
       frequencies: frequencies,
+      // direction: 1.0,
       view, proj
+      // time: 0.0
     };
 
     const vsRender = require('./shaders/particles.vert');
     const fsRender = require('./shaders/particles.frag');
 
     const particlesGeometry = new PIXI.mesh.Geometry()
+      .addAttribute('startPosition', minFrequencies, 3)
+      .addAttribute('endPosition', maxFrequencies, 3)
       .addAttribute('aTextureCoord', particlesUVs, 2)
-      .addAttribute('positions', particlesPoints, 3)
       .addAttribute('index', indices)
       .addIndex(indices);
 
@@ -222,6 +233,15 @@ export default class SoundParticles {
 
     // this._uniforms.color = this._audio.getAverageValue();
     this._uniforms.frequencies = this._audio.getFrequencyValues();
+    // this._time += 0.01;
+
+    // const change = Math.floor(this._time);
+
+    // if (change % 2) {
+    //   this._uniforms.direction = 0.0;
+    // } else {
+    //   this._uniforms.direction = 1.0;
+    // }
 
     this._camera.update();
     this._renderer.render(this._stage);
@@ -245,6 +265,7 @@ export default class SoundParticles {
     document.body.appendChild(this._renderer.view);
 
     // this._createSphere();
+    // this._time = 0.0;
     this._createParticlesSphere();
 
     this._audio.play(this._render.bind(this));

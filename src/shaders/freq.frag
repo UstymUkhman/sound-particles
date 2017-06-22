@@ -5,13 +5,13 @@ precision highp float;
 varying float pIndex;
 varying vec2 vTextureCoord;
 
-uniform sampler2D texturePos;
-uniform sampler2D textureVel;
-uniform sampler2D textureExtra;
+// uniform sampler2D texturePos;
+// uniform sampler2D textureVel;
+// uniform sampler2D textureExtra;
 
 // uniform int frequencies[1024];
 
-uniform float time;
+// uniform float time;
 
 /* vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -142,7 +142,7 @@ vec3 curlNoise(vec3 p) {
   );
 } */
 
-const float decrease = 0.96;
+// const float decrease = 0.96;
 
 void main(void) {
   // vec3 pos = texture2D(texturePos, vTextureCoord).rgb;
@@ -171,9 +171,9 @@ void main(void) {
   //   extra = vec3(0.0, 0.0, 0.0);
   // }
 
-  // gl_FragData[0] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
-  // gl_FragData[1] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
-  // gl_FragData[2] = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+  // gl_FragData[0] = vec4(pos, 1.0);
+  // gl_FragData[1] = vec4(vel, 1.0);
+  // gl_FragData[2] = vec4(extra, 1.0);
 
   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

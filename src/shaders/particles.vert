@@ -1,41 +1,40 @@
 precision highp float;
 
 attribute vec2 aTextureCoord;
-attribute vec3 positions;
+attribute vec3 startPosition;
+attribute vec3 endPosition;
 attribute float index;
 
-uniform mat4 view;
-uniform mat4 proj;
-
 uniform float frequencies[1024];
-uniform sampler2D textureExtra;
 uniform sampler2D texture;
+// uniform float time;
+uniform float direction;
+uniform mat4 proj;
+uniform mat4 view;
 
-// varying float pIndex;
 varying vec4 vColor;
 
 void main(void) {
-  gl_Position = proj * view * vec4(positions, 1.0);
-  gl_PointSize = 8.0; // could be randomized
+  // vec3 pos = startPosition;
+  // vec3 offset = endPosition * fract(time);
+  // vec3 pos = startPosition + offset;
 
-  vec3 color = texture2D(texture, aTextureCoord).rgb;
+  // float timeDec = time - fract(time);
+  // float timeMod = mod(timeDec, 2.0);
 
-  // if (index > 100.0) {
-  //   color = vec3(0.0, 0.0, 0.0);
+  // if (timeMod == 1.0) {
+  //   pos = endPosition - offset;
   // }
 
   int i = int(index);
-  float alpha = frequencies[i];
-  // vec3 color = vColor;
+  float frequency = frequencies[i];
 
-  // float alpha = frequency;
+  vec3 dist = (endPosition - startPosition) * frequency;
+  vec3 pos = startPosition + dist;
 
-  // if (frequency == 0.0) {
-  //   color = vec3(0.0, 0.0, 0.0);
-  // } else {
-  //   color = vec3(1.0, 1.0, 1.0);
-  // }
+  gl_Position = proj * view * vec4(pos, 1.0);
+  gl_PointSize = 8.0; // could be randomized
 
-  vColor = vec4(vec3(0.0, 0.0, 0.0), alpha); // texture2D(texture, aTextureCoord).rgb;
-  // pIndex = index;
+  vec3 color = texture2D(texture, aTextureCoord).rgb;
+  vColor = vec4(color, 1.0);
 }
