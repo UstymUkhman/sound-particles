@@ -111,11 +111,8 @@ export default class SoundParticles {
 
     this._uniforms = {
       frequencies: frequencies,
-      frequency: 0.0,
-      direction: 1.0,
-      time: 0.0,
-      proj,
-      view
+      proj, view // ,
+      // time: 0.0
     };
 
     const vsRender = require('./shaders/particles.vert');
@@ -143,20 +140,8 @@ export default class SoundParticles {
     // vec3.transformMat4(this._screenPos, this._tagPos, this._view);
     // vec3.transformMat4(this._screenPos, this._screenPos, this._proj);
 
-    /* Pulse
-     *
-      this._uniforms.time = +(this._uniforms.time + 0.01).toFixed(2);
-
-      const change = Math.floor(this._uniforms.time);
-
-      if (change % 2) {
-        this._uniforms.direction = 0.0;
-      } else {
-        this._uniforms.direction = 1.0;
-      }
-     */
-
     // Audioreactive Particles:
+    // this._uniforms.time = +(this._uniforms.time + 0.01).toFixed(2);
     this._uniforms.frequencies = this._audio.getFrequencyValues();
 
     this._camera.update();
