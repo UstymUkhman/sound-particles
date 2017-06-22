@@ -155,7 +155,7 @@ export default class AudioReactive {
     value -= this.SONG_MIN_POWER;
     value = value * 100 / this.SONG_RANGE;
 
-    return Math.round(value);
+    return Math.round(value) / 100;
   }
 
   getFrequencyValues() {

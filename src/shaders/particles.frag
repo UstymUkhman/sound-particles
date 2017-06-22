@@ -1,30 +1,17 @@
-#extension GL_EXT_draw_buffers : require
-
 precision highp float;
 
-// uniform int frequencies[1024];
-
-// varying float pIndex;
-// varying vec3 vColor;
 varying vec4 vColor;
 
 void main(void) {
+  // Gets distance in range 0.0 to 1.0 between:
+  // - gl_PointCoord => current point (pixel) coordinates
+  // - vec2(0.5)     => center of current particle
 	float d = distance(gl_PointCoord, vec2(0.5));
+
+  // if distance between this 2 points is greater then
+  // 0.5 (particle radius), discards current point
 	if (d > 0.5) discard;
 
-  // int index = int(pIndex);
-  // float frequency = float(frequencies[100]);
-  // vec3 color = vColor;
-
-  // if (frequency > pIndex) {
-  //   color = vec3(0.0, 0.0, 0.0);
-  // } else {
-  //   color = vec3(1.0, 1.0, 1.0);
-  // }
-
-  // gl_FragData[0] = vec4(vec3(1.0, 0.0, 0.0), 1.0);
-  // gl_FragData[1] = vec4(vec3(0.0, 1.0, 0.0), 1.0);
-  // gl_FragData[2] = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-
-  gl_FragColor = vColor; // vec4(vColor, 1.0);
+  // Otherwise, sets particle color to this point:
+  gl_FragColor = vColor;
 }
