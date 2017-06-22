@@ -60,11 +60,24 @@ export default class SoundParticles {
     this._stage.addChild(sphere);
   }
 
+  _shuffleIndices(indices) {
+    let index = indices.length;
+
+    while (index > 0) {
+      const rand = Math.floor(Math.random() * index);
+
+      index -= 1;
+
+      const temp = indices[index];
+
+      indices[index] = indices[rand];
+      indices[rand] = temp;
+    }
+  }
+
   _createParticles() {
     let indices = [];
     let frequencies = [];
-
-    const MAX_FREQ = 2;
     let minFrequencies = [];
     let maxFrequencies = [];
 
@@ -80,9 +93,9 @@ export default class SoundParticles {
       const minX = Math.cos(phi) * radius;
       const minZ = Math.sin(phi) * radius;
 
-      const maxX = minX * MAX_FREQ;
-      const maxY = minY * MAX_FREQ;
-      const maxZ = minZ * MAX_FREQ;
+      const maxX = minX * 2.0;
+      const maxY = minY * 2.0;
+      const maxZ = minZ * 2.0;
 
       maxFrequencies = maxFrequencies.concat([maxX, maxY, maxZ]);
       minFrequencies = minFrequencies.concat([minX, minY, minZ]);
@@ -93,6 +106,8 @@ export default class SoundParticles {
 
     const view = this._view;
     const proj = this._proj;
+
+    this._shuffleIndices(indices);
 
     this._uniforms = {
       frequencies: frequencies,
@@ -128,22 +143,21 @@ export default class SoundParticles {
     // vec3.transformMat4(this._screenPos, this._tagPos, this._view);
     // vec3.transformMat4(this._screenPos, this._screenPos, this._proj);
 
-    // Audioreactive Sphere:
-    // this._uniforms.frequency = this._audio.getAverageValue();
+    /* Pulse
+     *
+      this._uniforms.time = +(this._uniforms.time + 0.01).toFixed(2);
 
-    // // Audioreactive Particles:
+      const change = Math.floor(this._uniforms.time);
+
+      if (change % 2) {
+        this._uniforms.direction = 0.0;
+      } else {
+        this._uniforms.direction = 1.0;
+      }
+     */
+
+    // Audioreactive Particles:
     this._uniforms.frequencies = this._audio.getFrequencyValues();
-
-    // Pulse
-    // this._uniforms.time = +(this._uniforms.time + 0.01).toFixed(2);
-
-    // const change = Math.floor(this._uniforms.time);
-
-    // if (change % 2) {
-    //   this._uniforms.direction = 0.0;
-    // } else {
-    //   this._uniforms.direction = 1.0;
-    // }
 
     this._camera.update();
     this._renderer.render(this._stage);
