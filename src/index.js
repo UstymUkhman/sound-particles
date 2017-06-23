@@ -15,7 +15,7 @@ export default class SoundParticles {
 
   constructor() {
     this._audio = new AudioReactive('assets/John Newman - Love Me Again.mp3');
-    this._name = 'SoundParticles';
+    this._audio.setSongFrequencies({ min: 510.5, max: 621.5 });
 
     this._height = window.innerHeight;
     this._width = window.innerWidth;
@@ -23,12 +23,9 @@ export default class SoundParticles {
     this._ratio = this._width / this._height;
     this._destroyed = false;
 
+    this._name = 'SoundParticles';
     return !!Detector.webgl;
   }
-
-  /* _getRandomFromRange(min, max) {
-    return min + Math.random() * (max - min);
-  } */
 
   _createBackground() {
     const position = [-1, 1, -0.5, 1, 1, -0.5, 1, -1, -0.5, -1, -1, -0.5];
@@ -141,8 +138,8 @@ export default class SoundParticles {
 
     this._particleUniforms = {
       frequencies: frequencies,
-      proj, view // ,
-      // time: 0.0
+      proj, view,
+      time: 0.0
     };
 
     const vsRender = require('./shaders/particles.vert');

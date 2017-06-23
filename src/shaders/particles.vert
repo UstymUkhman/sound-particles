@@ -28,6 +28,8 @@ void main(void) {
 
   vec3 dist = (endPos - startPos) * frequency;
   vec3 pos = startPos + dist;
+
+  const float black = 0.1;
   const float dark = 0.3;
 
   vec3 color = vec3(
@@ -35,6 +37,18 @@ void main(void) {
     dark - startPos.y,
     dark - startPos.z
   );
+
+  if (color.x < black) {
+    color.x = black;
+  }
+
+  if (color.y < black) {
+    color.y = black;
+  }
+
+  if (color.y < black) {
+    color.y = black;
+  }
 
   gl_Position = proj * view * vec4(pos, 1.0);
   gl_PointSize = 25.0 * frequency + 8.0;

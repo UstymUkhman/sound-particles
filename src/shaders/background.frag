@@ -28,6 +28,10 @@ void main() {
     progress += 0.15;
   }
 
+  if (progress > 1.0) {
+    progress = 1.0;
+  }
+
   vec3 centerColor = progress * white;
   vec4 color = vec4(1.0);
 
