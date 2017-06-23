@@ -11,6 +11,7 @@ export default class AudioReactive {
     this._startTime = null;
     this._pauseTime = null;
 
+    this._audioDuration = 0.0;
     this._soundSource = null;
     this._isPlaying = false;
     this.isReady = false;
@@ -52,6 +53,7 @@ export default class AudioReactive {
     this._soundSource.addEventListener('ended', onAudioEnded);
 
     this._soundSource.addEventListener('canplay', () => {
+      this._audioDuration = this._soundSource.duration;
       this._soundSource.loaded = true;
       this._soundSource.volume = 1.0;
       this.isReady = true;
@@ -158,6 +160,32 @@ export default class AudioReactive {
     return Math.round(value) / 100;
   }
 
+  /*
+   * With average frequency value:
+
+  getFrequencyValues() {
+    let analysed = this._soundSource.analyser.frequencies();
+    let frequencies = [];
+    let average = 0;
+
+    for (let i = 0; i < analysed.length; i++) {
+      frequencies.push(analysed[i] / TOT_FREQUENCIES);
+      average += analysed[i] + i;
+    }
+
+    average = (average / analysed.length - 1) / this.MAX_POWER;
+    average -= this.SONG_MIN_POWER;
+
+    average = average * 100 / this.SONG_RANGE;
+    average = Math.round(average) / 100;
+
+    return {
+      frequencies: frequencies,
+      averageValue: average
+    };
+  }
+  */
+
   getFrequencyValues() {
     let frequencies = [];
     let analysed = this._soundSource.analyser.frequencies();
@@ -167,5 +195,11 @@ export default class AudioReactive {
     }
 
     return frequencies;
+  }
+
+  getAudioProgress() {
+    const percent = this._soundSource.currentTime * 100 / this._audioDuration;
+
+    return +percent.toFixed(2);
   }
 }

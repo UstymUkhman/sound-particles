@@ -32,7 +32,6 @@ export default class SoundParticles {
 
   _createBackground() {
     const position = [-1, 1, -0.5, 1, 1, -0.5, 1, -1, -0.5, -1, -1, -0.5];
-    const matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     const indices = [0, 1, 2, 0, 2, 3];
     const uvs = [0, 0, 1, 0, 1, 1, 0, 1];
 
@@ -44,20 +43,14 @@ export default class SoundParticles {
     const vs = require('./shaders/background.vert');
     const fs = require('./shaders/background.frag');
 
-    const view = this._view;
-    const proj = this._proj;
-
-    const uniforms = {
+    this._backgroundUniforms = {
+      white: [1.0, 1.0, 1.0],
+      black: [0.0, 0.0, 0.0],
       aspect: this._ratio,
-      projection: proj,
-      model: matrix,
-      view: view,
-
-      color1: [1, 1, 1],
-      color2: [0, 0, 0]
+      time: 0.0
     };
 
-    const shader = new PIXI.Shader.from(vs, fs, uniforms);
+    const shader = new PIXI.Shader.from(vs, fs, this._backgroundUniforms);
     const mesh = new PIXI.mesh.RawMesh(geometry, shader);
 
     this._stage.addChild(mesh);
@@ -78,7 +71,7 @@ export default class SoundParticles {
     const view = this._view;
     const proj = this._proj;
 
-    this._uniforms = {
+    this._sphereUniforms = {
       uPosition: [0, 0, 0], uScale: 10,
       texture, view, proj
     };
@@ -86,7 +79,7 @@ export default class SoundParticles {
     const vs = require('./shaders/sphere.vert');
     const fs = require('./shaders/sphere.frag');
 
-    const shader = PIXI.Shader.from(vs, fs, this._uniforms);
+    const shader = PIXI.Shader.from(vs, fs, this._sphereUniforms);
     const sphere = new PIXI.mesh.RawMesh(geometry, shader);
 
     sphere.state.depthTest = true;
@@ -119,12 +112,16 @@ export default class SoundParticles {
     let step = Math.PI * (5.0 - Math.sqrt(5));
 
     for (let i = 0; i < PARTICLES; i++) {
-      const minY = ((i * particlesOffset) - 1) + (particlesOffset / 2);
+      let minY = ((i * particlesOffset) - 1) + (particlesOffset / 2);
       const radius = Math.sqrt(1 - Math.pow(minY, 2));
       const phi = ((i + random) % PARTICLES) * step;
 
-      const minX = Math.cos(phi) * radius;
-      const minZ = Math.sin(phi) * radius;
+      let minX = Math.cos(phi) * radius;
+      let minZ = Math.sin(phi) * radius;
+
+      minX /= 1.5;
+      minY /= 1.5;
+      minZ /= 1.5;
 
       const maxX = minX * 2.0;
       const maxY = minY * 2.0;
@@ -142,7 +139,7 @@ export default class SoundParticles {
 
     this._shuffleIndices(indices);
 
-    this._uniforms = {
+    this._particleUniforms = {
       frequencies: frequencies,
       proj, view // ,
       // time: 0.0
@@ -157,7 +154,7 @@ export default class SoundParticles {
       .addAttribute('index', indices)
       .addIndex(indices);
 
-    const shaderRender = PIXI.Shader.from(vsRender, fsRender, this._uniforms);
+    const shaderRender = PIXI.Shader.from(vsRender, fsRender, this._particleUniforms);
     const particles = new PIXI.mesh.RawMesh(particlesGeometry, shaderRender, null, PIXI.DRAW_MODES.POINTS);
 
     particles.state.depthTest = true;
@@ -173,9 +170,12 @@ export default class SoundParticles {
     // vec3.transformMat4(this._screenPos, this._tagPos, this._view);
     // vec3.transformMat4(this._screenPos, this._screenPos, this._proj);
 
-    // Audioreactive Particles:
-    // this._uniforms.time = +(this._uniforms.time + 0.01).toFixed(2);
-    this._uniforms.frequencies = this._audio.getFrequencyValues();
+    // Particles:
+    this._particleUniforms.time = this._audio.getAudioProgress();
+    this._particleUniforms.frequencies = this._audio.getFrequencyValues();
+
+    // Background:
+    this._backgroundUniforms.time = this._audio.getAudioProgress();
 
     this._camera.update();
     this._renderer.render(this._stage);
@@ -201,6 +201,7 @@ export default class SoundParticles {
     // this._createSphere();
     this._createBackground();
     this._createParticles();
+
     this._audio.play(this._render.bind(this));
   }
 

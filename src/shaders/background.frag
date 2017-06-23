@@ -1,9 +1,10 @@
 precision highp float;
 
-uniform vec3 color1;
-uniform vec3 color2;
-
 uniform float aspect;
+uniform float time;
+
+uniform vec3 white;
+uniform vec3 black;
 
 varying vec2 vUv;
 
@@ -18,11 +19,20 @@ void main() {
   pos /= scale;
   pos -= offset;
 
+  float progress = time / 100.0;
   float dist = length(pos);
+
+  if (progress > 0.21) {
+    progress += 0.8;
+  } else if (progress > 0.055) {
+    progress += 0.15;
+  }
+
+  vec3 centerColor = progress * white;
   vec4 color = vec4(1.0);
 
   dist = smoothstep(smoothing.x, smoothing.y, 1.0 - dist);
-  color.rgb = mix(color2, color1, dist);
+  color.rgb = mix(black, centerColor, dist);
 
   gl_FragColor = color;
 }
