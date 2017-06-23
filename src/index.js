@@ -26,8 +26,41 @@ export default class SoundParticles {
     return !!Detector.webgl;
   }
 
-  _getRandomFromRange(min, max) {
+  /* _getRandomFromRange(min, max) {
     return min + Math.random() * (max - min);
+  } */
+
+  _createBackground() {
+    const position = [-1, 1, -0.5, 1, 1, -0.5, 1, -1, -0.5, -1, -1, -0.5];
+    const matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    const indices = [0, 1, 2, 0, 2, 3];
+    const uvs = [0, 0, 1, 0, 1, 1, 0, 1];
+
+    const geometry = new PIXI.mesh.Geometry()
+      .addAttribute('position', position, 3)
+      .addAttribute('uv', uvs, 2)
+      .addIndex(indices);
+
+    const vs = require('./shaders/background.vert');
+    const fs = require('./shaders/background.frag');
+
+    const view = this._view;
+    const proj = this._proj;
+
+    const uniforms = {
+      aspect: this._ratio,
+      projection: proj,
+      model: matrix,
+      view: view,
+
+      color1: [1, 1, 1],
+      color2: [0, 0, 0]
+    };
+
+    const shader = new PIXI.Shader.from(vs, fs, uniforms);
+    const mesh = new PIXI.mesh.RawMesh(geometry, shader);
+
+    this._stage.addChild(mesh);
   }
 
   _createSphere() {
@@ -166,6 +199,7 @@ export default class SoundParticles {
     document.body.appendChild(this._renderer.view);
 
     // this._createSphere();
+    this._createBackground();
     this._createParticles();
     this._audio.play(this._render.bind(this));
   }
