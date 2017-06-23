@@ -138,8 +138,8 @@ export default class SoundParticles {
 
     this._particleUniforms = {
       frequencies: frequencies,
-      proj, view,
-      time: 0.0
+      progress: 0.0,
+      proj, view
     };
 
     const vsRender = require('./shaders/particles.vert');
@@ -163,12 +163,14 @@ export default class SoundParticles {
       return;
     }
 
+    this.stats.begin();
+
     // Sphere Rendering:
     // vec3.transformMat4(this._screenPos, this._tagPos, this._view);
     // vec3.transformMat4(this._screenPos, this._screenPos, this._proj);
 
     // Particles:
-    this._particleUniforms.time = this._audio.getAudioProgress();
+    this._particleUniforms.progress = this._audio.getAudioProgress();
     this._particleUniforms.frequencies = this._audio.getFrequencyValues();
 
     // Background:
@@ -176,6 +178,8 @@ export default class SoundParticles {
 
     this._camera.update();
     this._renderer.render(this._stage);
+
+    this.stats.end();
     requestAnimationFrame(this._render.bind(this));
   }
 
@@ -207,6 +211,7 @@ export default class SoundParticles {
       this.stats = new Stats();
     }
 
+    this.stats.showPanel(0);
     document.body.appendChild(this.stats.dom);
   }
 

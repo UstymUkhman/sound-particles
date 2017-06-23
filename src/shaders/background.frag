@@ -23,13 +23,13 @@ void main() {
   float dist = length(pos);
 
   if (progress > 0.21) {
-    progress += 0.8;
+    progress += 0.4;
   } else if (progress > 0.055) {
-    progress += 0.15;
+    progress += 0.075;
   }
 
   if (progress > 1.0) {
-    progress = 1.0;
+    progress = 0.75;
   }
 
   vec3 centerColor = progress * white;

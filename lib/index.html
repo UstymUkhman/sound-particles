@@ -12,11 +12,11 @@
 
     <style type="text/css">
       html, body {
-        /* -webkit-filter: sepia(10%);
+        -webkit-filter: sepia(10%);
         -moz-filter: sepia(10%);
         -ms-filter: sepia(10%);
         -o-filter: sepia(10%);
-        filter: sepia(10%); */
+        filter: sepia(10%);
 
         font-family: 'Roboto';
         overflow: hidden;
@@ -53,7 +53,7 @@
   <body>
     <script type="text/javascript">
       let experiment = new SoundParticles();
-      // experiment.showStats();
+      experiment.showStats();
 
       window.addEventListener('resize', function (event) {
         experiment.resize(window.innerWidth, window.innerHeight);
