@@ -1,5 +1,9 @@
-//                             i   Hz        i      Hz          i       Hz
-// Theorical Frequency Range: (0 ~ 20) --> (800 ~ 20.000) --> (1024 ~ 25.600)
+/*                                                               *
+ * |------------------------------------------------------------ *
+ * | Frequency Bin Index :  0 (i)  |    800 (i)  |  1.024 (i)  | *
+ * | Frequency Value     : 20 (Hz) | 20.000 (Hz) | 25.600 (Hz) | *
+ * |------------------------------------------------------------ *
+ */
 
 const analyser = require('web-audio-analyser');
 const MAX_DECIBELS = 255;
@@ -80,6 +84,7 @@ export default class AudioReactive {
   }
 
   _loadAudioTracks(onPlay) {
+    const tracks = Object.keys(this._audioSrc).length;
     let audioDuration = 0;
     let sourceIndex = 0;
 
@@ -98,7 +103,7 @@ export default class AudioReactive {
           this._longestSource = source;
         }
 
-        if (sourceIndex === this._audioSrc.length) {
+        if (sourceIndex === tracks) {
           this._soundSources[this._longestSource].addEventListener('ended', this._onAudioTrackEnded.bind(this));
 
           this._audioDuration = audioDuration;
@@ -140,10 +145,6 @@ export default class AudioReactive {
   }
 
   _studyAudio() {
-    if (!this._studingAudio) {
-      return;
-    }
-
     let frequency = this._getAverageFrequency();
 
     if (this._maxFrequency < frequency) {
@@ -194,9 +195,6 @@ export default class AudioReactive {
     console.info(`Song min frequency = ${this._minFrequency}`);
     console.info(`Song max frequency = ${this._maxFrequency}`);
     console.info(`Song frequency range = ${this.SONG_RANGE}`);
-
-    this._studingAudio = false;
-    this._loadAudioTrack();
   }
 
   setSongFrequencies(frequencies) {
@@ -206,8 +204,6 @@ export default class AudioReactive {
   }
 
   play(onReady) {
-    this._study = false;
-
     if (this._multipleSources) {
       this._loadAudioTracks(onReady);
     } else {
@@ -220,11 +216,8 @@ export default class AudioReactive {
       return false;
     }
 
-    this._study = true;
     this._maxFrequency = 0;
     this._minFrequency = Infinity;
-
-    this._studingAudio = true;
     this._loadAudioTrack(null, true);
   }
 

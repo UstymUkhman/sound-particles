@@ -1,6 +1,5 @@
-import Sphere from './Sphere';
 import * as PIXI from 'pixi.js';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 import AudioReactive from './AudioReactive';
 import Detector from 'three/examples/js/Detector';
@@ -8,7 +7,6 @@ import Stats from 'three/examples/js/libs/stats.min';
 import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
-const PI_2 = Math.PI / 2;
 const PARTICLES = 1024;
 
 export default class SoundParticles {
@@ -51,36 +49,6 @@ export default class SoundParticles {
     const mesh = new PIXI.mesh.RawMesh(geometry, shader);
 
     this._stage.addChild(mesh);
-  }
-
-  _createSphere() {
-    this._screenPos = vec3.create();
-    this._camera = new OrbitalCameraControl(this._view, 50);
-    this._tagPos = vec3.fromValues(Math.cos(PI_2) * 10, 0, Math.sin(PI_2) * 10);
-
-    const { positions, uvs, indices } = Sphere;
-    const geometry = new PIXI.mesh.Geometry()
-              .addAttribute('aVertexPosition', positions, 3)
-              .addAttribute('aUV', uvs, 2)
-              .addIndex(indices);
-
-    const texture = PIXI.Texture.from('assets/gradient.jpg');
-    const view = this._view;
-    const proj = this._proj;
-
-    this._sphereUniforms = {
-      uPosition: [0, 0, 0], uScale: 10,
-      texture, view, proj
-    };
-
-    const vs = require('./shaders/sphere.vert');
-    const fs = require('./shaders/sphere.frag');
-
-    const shader = PIXI.Shader.from(vs, fs, this._sphereUniforms);
-    const sphere = new PIXI.mesh.RawMesh(geometry, shader);
-
-    sphere.state.depthTest = true;
-    this._stage.addChild(sphere);
   }
 
   _shuffleIndices(indices) {
@@ -163,12 +131,6 @@ export default class SoundParticles {
       return;
     }
 
-    this.stats.begin();
-
-    // Sphere Rendering:
-    // vec3.transformMat4(this._screenPos, this._tagPos, this._view);
-    // vec3.transformMat4(this._screenPos, this._screenPos, this._proj);
-
     // Particles:
     this._particleUniforms.progress = this._audio.getAudioProgress();
     this._particleUniforms.frequencies = this._audio.getFrequencyValues();
@@ -179,7 +141,7 @@ export default class SoundParticles {
     this._camera.update();
     this._renderer.render(this._stage);
 
-    this.stats.end();
+    this.stats.update();
     requestAnimationFrame(this._render.bind(this));
   }
 
@@ -199,7 +161,6 @@ export default class SoundParticles {
     this._camera = new OrbitalCameraControl(this._view, 5);
     document.body.appendChild(this._renderer.view);
 
-    // this._createSphere();
     this._createBackground();
     this._createParticles();
 
