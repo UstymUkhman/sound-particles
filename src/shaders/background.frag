@@ -1,14 +1,15 @@
 precision highp float;
 
+uniform float progress;
 uniform float aspect;
-uniform float time;
-
-uniform vec3 white;
-uniform vec3 black;
+uniform bool dark;
 
 varying vec2 vUv;
 
 void main() {
+  const vec3 white = vec3(1.0, 1.0, 1.0);
+  const vec3 black = vec3(0.0, 0.0, 0.0);
+
   vec2 smoothing = vec2(-0.4, 0.8);
   vec2 scale = vec2(1.0, 1.0);
   vec2 offset = vec2(0.0, 0.0);
@@ -19,20 +20,16 @@ void main() {
   pos /= scale;
   pos -= offset;
 
-  float progress = time / 100.0;
+  float prog = progress / 100.0;
   float dist = length(pos);
 
-  if (progress > 0.21) {
-    progress += 0.4;
-  } else if (progress > 0.055) {
-    progress += 0.075;
+  if (dark) {
+    prog += 0.05;
+  } else {
+    prog = 0.75;
   }
 
-  if (progress > 1.0) {
-    progress = 0.75;
-  }
-
-  vec3 centerColor = progress * white;
+  vec3 centerColor = prog * white;
   vec4 color = vec4(1.0);
 
   dist = smoothstep(smoothing.x, smoothing.y, 1.0 - dist);

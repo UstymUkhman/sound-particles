@@ -40,10 +40,9 @@ export default class SoundParticles {
     const fs = require('./shaders/background.frag');
 
     this._backgroundUniforms = {
-      white: [1.0, 1.0, 1.0],
-      black: [0.0, 0.0, 0.0],
       aspect: this._ratio,
-      time: 0.0
+      progress: 0.0,
+      dark: true
     };
 
     const shader = new PIXI.Shader.from(vs, fs, this._backgroundUniforms);
@@ -132,7 +131,6 @@ export default class SoundParticles {
       return;
     }
 
-    // Particles:
     const progTime = Math.abs(this._startTime - Date.now()) / 1000;
 
     if (progTime > 40.8 && !this._particleUniforms.easing) {
@@ -141,6 +139,7 @@ export default class SoundParticles {
     } else if (progTime > 44.6 && this._particleUniforms.easing < 0) {
       this._particleUniforms.easing = progTime;
     } else if (progTime > 48.6) {
+      this._backgroundUniforms.dark = false;
       this._particleUniforms.easing = 0.0;
       this._runEasing = false;
     }
@@ -160,8 +159,7 @@ export default class SoundParticles {
     this._particleUniforms.time = progTime;
     this._particleUniforms.frequencies = this._audio.getFrequencyValues();
 
-    // Background:
-    this._backgroundUniforms.time = this._audio.getAudioProgress();
+    this._backgroundUniforms.progress = this._audio.getAudioProgress();
 
     this._camera.update();
     this._renderer.render(this._stage);
@@ -211,10 +209,13 @@ export default class SoundParticles {
     this._width = width;
     this._height = height;
 
-    this._renderer.view.width = this._width;
-    this._renderer.view.height = this._height;
-
     this._ratio = this._width / this._height;
+    this._backgroundUniforms.aspect = this._ratio;
+
+    this._renderer.view.style.width = this._width;
+    this._renderer.view.style.height = this._height;
+
+    mat4.perspective(this._proj, 45 * RAD, this._ratio, 0.1, 100);
   }
 
   destroy() {
