@@ -34,7 +34,7 @@ void main(void) {
     }
   }
 
-  if (time > 48.6) {
+  if (time > 48.5) {
     startPos *= 2.0;
     endPos = startPos * 2.0;
   }

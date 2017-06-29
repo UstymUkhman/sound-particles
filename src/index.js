@@ -133,25 +133,15 @@ export default class SoundParticles {
 
     const progTime = Math.abs(this._startTime - Date.now()) / 1000;
 
-    if (progTime > 40.8 && !this._particleUniforms.easing) {
-      this._runEasing = true;
-      this._particleUniforms.easing = -progTime;
-    } else if (progTime > 44.6 && this._particleUniforms.easing < 0) {
-      this._particleUniforms.easing = progTime;
-    } else if (progTime > 48.6) {
+    if (this._runEasing && progTime > 48.5) {
       this._backgroundUniforms.dark = false;
-      this._particleUniforms.easing = 0.0;
-      this._runEasing = false;
-    }
-
-    if (this._runEasing && progTime > 48.6) {
       this._particleUniforms.easing = 0.0;
       this._runEasing = false;
 
     } else if (this._runEasing && progTime > 44.6) {
       this._particleUniforms.easing = 44.6;
 
-    } else if (progTime > 40.8) {
+    } else if (progTime > 40.8 && progTime < 48.5) {
       this._particleUniforms.easing = -40.8;
       this._runEasing = true;
     }
