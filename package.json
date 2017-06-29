@@ -1,5 +1,5 @@
 {
-  "name": "SoundParticles",
+  "name": "audioreactive",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -16,6 +16,8 @@
   "dependencies": {
     "gl-matrix": "^2.3.2",
     "glsl-blend": "^1.0.3",
+    "glsl-blend-overlay": "^1.0.5",
+    "glsl-random": "0.0.5",
     "gsap": "^1.19.1",
     "pixi.js": "^5.0.0-alpha",
     "three": "^0.84.0",

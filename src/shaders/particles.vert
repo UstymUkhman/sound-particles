@@ -23,18 +23,18 @@ void main(void) {
   bool animate = easing < 0.0 || easing > 0.0;
 
   if (animate) {
-    float animate = 1.0 + (time - 40.8) / 10.0;
+    float animate = 1.0 + (time - 40.8) / 5.0;
     startPos /= animate;
     endPos /= animate;
 
     if (easing > 0.0) {
-      float diff = 1.0 + (time - easing) / 2.0;
+      float diff = 1.0 + (time - easing) / 3.0;
       startPos *= diff;
       endPos *= diff;
     }
   }
 
-  if (time > 48.5) {
+  if (time > 48.6) { // .5
     startPos *= 2.0;
     endPos = startPos * 2.0;
   }

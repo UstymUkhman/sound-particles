@@ -6,23 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>SoundParticles</title>
-
-    <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
     <script src="SoundParticles.js"></script>
 
     <style type="text/css">
       html, body {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+
         -webkit-filter: sepia(10%);
         -moz-filter: sepia(10%);
         -ms-filter: sepia(10%);
         -o-filter: sepia(10%);
         filter: sepia(10%);
 
-        font-family: 'Roboto';
+        position: absolute;
         overflow: hidden;
         color: #000000;
 
-        position: absolute;
         height: 100%;
         width: 100%;
 
@@ -30,10 +31,6 @@
         margin: 0;
         left: 0;
         top: 0;
-
-        -webkit-tap-highlight-color: transparent;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
       }
 
       canvas {
@@ -61,8 +58,6 @@
 
       experiment.startExperience();
       experiment.resize(window.innerWidth, window.innerHeight);
-
-      // eslintrc --> rules: { "max-len": [2, 120, 4], }
     </script>
   </body>
 </html>
