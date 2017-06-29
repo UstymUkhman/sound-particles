@@ -192,8 +192,8 @@ export default class AudioReactive {
       max: this._maxFrequency
     });
 
-    console.info(`Song min frequency = ${this._minFrequency}`);
-    console.info(`Song max frequency = ${this._maxFrequency}`);
+    console.info(`Song min frequency   = ${this._minFrequency}`);
+    console.info(`Song max frequency   = ${this._maxFrequency}`);
     console.info(`Song frequency range = ${this.SONG_RANGE}`);
   }
 

@@ -5,7 +5,8 @@ attribute vec3 endPosition;
 attribute float index;
 
 uniform float frequencies[1024];
-uniform float progress;
+uniform float easing;
+uniform float time;
 
 uniform mat4 proj;
 uniform mat4 view;
@@ -19,9 +20,21 @@ void main(void) {
   vec3 startPos = startPosition;
   vec3 endPos = endPosition;
 
-  float progress = progress / 100.0;
+  bool animate = easing < 0.0 || easing > 0.0;
 
-  if (progress > 0.21) {
+  if (animate) {
+    float animate = 1.0 + (time - 40.8) / 10.0;
+    startPos /= animate;
+    endPos /= animate;
+
+    if (easing > 0.0) {
+      float diff = 1.0 + (time - easing) / 2.0;
+      startPos *= diff;
+      endPos *= diff;
+    }
+  }
+
+  if (time > 48.6) {
     startPos *= 2.0;
     endPos = startPos * 2.0;
   }

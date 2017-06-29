@@ -20,6 +20,7 @@ export default class SoundParticles {
 
     this._ratio = this._width / this._height;
     this._destroyed = false;
+    this._startTime = null;
 
     this._name = 'SoundParticles';
     return !!Detector.webgl;
@@ -106,7 +107,7 @@ export default class SoundParticles {
 
     this._particleUniforms = {
       frequencies: frequencies,
-      progress: 0.0,
+      easing: 0.0, time: 0.0,
       proj, view
     };
 
@@ -132,7 +133,31 @@ export default class SoundParticles {
     }
 
     // Particles:
-    this._particleUniforms.progress = this._audio.getAudioProgress();
+    const progTime = Math.abs(this._startTime - Date.now()) / 1000;
+
+    if (progTime > 40.8 && !this._particleUniforms.easing) {
+      this._runEasing = true;
+      this._particleUniforms.easing = -progTime;
+    } else if (progTime > 44.6 && this._particleUniforms.easing < 0) {
+      this._particleUniforms.easing = progTime;
+    } else if (progTime > 48.6) {
+      this._particleUniforms.easing = 0.0;
+      this._runEasing = false;
+    }
+
+    if (this._runEasing && progTime > 48.6) {
+      this._particleUniforms.easing = 0.0;
+      this._runEasing = false;
+
+    } else if (this._runEasing && progTime > 44.6) {
+      this._particleUniforms.easing = 44.6;
+
+    } else if (progTime > 40.8) {
+      this._particleUniforms.easing = -40.8;
+      this._runEasing = true;
+    }
+
+    this._particleUniforms.time = progTime;
     this._particleUniforms.frequencies = this._audio.getFrequencyValues();
 
     // Background:
@@ -164,6 +189,8 @@ export default class SoundParticles {
     this._createBackground();
     this._createParticles();
 
+    this._runEasing = false;
+    this._startTime = Date.now();
     this._audio.play(this._render.bind(this));
   }
 
