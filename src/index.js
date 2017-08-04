@@ -3,7 +3,6 @@ import { mat4 } from 'gl-matrix';
 
 import AudioReactive from './AudioReactive';
 import Detector from 'three/examples/js/Detector';
-import Stats from 'three/examples/js/libs/stats.min';
 import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
@@ -154,7 +153,6 @@ export default class SoundParticles {
     this._camera.update();
     this._renderer.render(this._stage);
 
-    this.stats.update();
     requestAnimationFrame(this._render.bind(this));
   }
 
@@ -180,19 +178,6 @@ export default class SoundParticles {
     this._runEasing = false;
     this._startTime = Date.now();
     this._audio.play(this._render.bind(this));
-  }
-
-  showStats() {
-    if (!this.stats) {
-      this.stats = new Stats();
-    }
-
-    this.stats.showPanel(0);
-    document.body.appendChild(this.stats.dom);
-  }
-
-  hideStats() {
-    this.stats.dom.parentNode.removeChild(this.stats.dom);
   }
 
   resize(width, height) {

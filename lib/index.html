@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>SoundParticles</title>
-    <script src="SoundParticles.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script src="SoundParticles.min.js"></script>
 
     <style type="text/css">
       html, body {
@@ -33,6 +35,30 @@
         top: 0;
       }
 
+      div.credits {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-bottom-left-radius: 10px;
+        color: rgb(200, 200, 200);
+        padding: 10px 15px;
+
+        font-family: 'Roboto', sans-serif;
+        letter-spacing: 1px;
+        text-align: center;
+        line-height: 20px;
+        font-weight: 300;
+        font-size: 15px;
+
+        pointer-events: none;
+        user-select: none;
+        outline: none;
+        border: none;
+
+        position: absolute;
+        z-index: 1;
+        right: 0;
+        top: 0;
+      }
+
       canvas {
         position: absolute;
         filter: none;
@@ -48,9 +74,10 @@
   </head>
 
   <body>
+    <div class="credits">Music by:<br>John Newman - Love Me Again</div>
+
     <script type="text/javascript">
       let experiment = new SoundParticles();
-      experiment.showStats();
 
       window.addEventListener('resize', function (event) {
         experiment.resize(window.innerWidth, window.innerHeight);
