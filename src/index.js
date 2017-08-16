@@ -6,7 +6,7 @@ import Detector from 'three/examples/js/Detector';
 import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
-const PARTICLES = 1024;
+const PARTICLES = navigator.hardwareConcurrency < 4 ? 128 : 1024;
 
 export default class SoundParticles {
 
