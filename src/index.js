@@ -9,11 +9,10 @@ import OrbitalCameraControl from './OrbitalCameraControl';
 const RAD = Math.PI / 180;
 
 export default class SoundParticles {
-
-  constructor(lowPerformance = false) {
+  constructor(track, lowPerformance = false) {
     const fftSize = lowPerformance ? 256 : null;
 
-    this._audio = new AudioReactive('assets/John Newman - Love Me Again.mp3', fftSize);
+    this._audio = new AudioReactive(track, fftSize);
     this._audio.setSongFrequencies({ min: 510.5, max: 621.5 });
 
     this._height = window.innerHeight;
@@ -189,12 +188,13 @@ export default class SoundParticles {
     this._audio.play(this._render.bind(this));
   }
 
-  showStats() {
+  showStats(top = '0px') {
     if (!this.stats) {
       this.stats = new Stats();
     }
 
     this.stats.showPanel(0);
+    this.stats.dom.style.top = top;
     document.body.appendChild(this.stats.dom);
   }
 
@@ -216,6 +216,8 @@ export default class SoundParticles {
   }
 
   destroy() {
+    this._renderer.view.remove();
+    this.stats.dom.remove();
     this._destroyed = true;
   }
 }

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -8,7 +8,7 @@
     <title>SoundParticles</title>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <script src="SoundParticles.min.js"></script>
+    <script src="SoundParticles.js"></script>
 
     <style type="text/css">
       html, body {
@@ -143,17 +143,20 @@
     </div>
 
     <script type="text/javascript">
+      var music = 'assets/John Newman - Love Me Again.mp3';
+      var experiment = null;
+
       function resizeHandler (event) {
-        window.experiment.resize(window.innerWidth, window.innerHeight);
+        experiment.resize(window.innerWidth, window.innerHeight);
       }
 
       function createExperiment (lowPerformance) {
-        window.experiment = new SoundParticles(lowPerformance);
+        experiment = new SoundParticles(music, lowPerformance);
         window.addEventListener('resize', resizeHandler);
 
-        window.experiment.showStats();
-        window.experiment.startExperience();
-        window.experiment.resize(window.innerWidth, window.innerHeight);
+        experiment.showStats();
+        experiment.startExperience();
+        experiment.resize(window.innerWidth, window.innerHeight);
       }
 
       window.addEventListener('error', function (message) {
@@ -162,7 +165,7 @@
         }, 1000);
 
         window.removeEventListener('resize', resizeHandler);
-        window.experiment.destroy();
+        experiment.destroy();
 
         createExperiment(true);
       });
