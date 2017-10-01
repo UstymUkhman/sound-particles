@@ -6,13 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>SoundParticles</title>
-    <script src="SoundParticles.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script src="SoundParticles.min.js"></script>
 
     <style type="text/css">
       html, body {
         -webkit-tap-highlight-color: transparent;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+
+        -webkit-text-size-adjust: none;
+        -moz-text-size-adjust: none;
+        -ms-text-size-adjust: none;
+        -o-text-size-adjust: none;
+        text-size-adjust: none;
+
+        -webkit-touch-callout: none;
+        -moz-touch-callout: none;
+        -ms-touch-callout: none;
+        -o-touch-callout: none;
+        touch-callout: none;
+
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
 
         -webkit-filter: sepia(10%);
         -moz-filter: sepia(10%);
@@ -29,35 +49,125 @@
 
         padding: 0;
         margin: 0;
+
+        bottom: 0;
+        right: 0;
         left: 0;
         top: 0;
       }
 
       canvas {
         position: absolute;
-        filter: none;
+
         height: 100%;
         width: 100%;
 
         padding: 0;
         margin: 0;
+
+        bottom: 0;
+        right: 0;
         left: 0;
         top: 0;
+      }
+
+      div.music-label {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-bottom-left-radius: 10px;
+        padding: 15px 10px;
+
+        font-family: 'Roboto', sans-serif;
+        color: rgb(200, 200, 200);
+        font-size: 13px;
+
+        position: absolute;
+        z-index: 1;
+        right: 0;
+        top: 0;
+      }
+
+      div.warning-label {
+        -webkit-transition: -webkit-transform 0.5s ease-out;
+        -moz-transition: -moz-transform 0.5s ease-out;
+        -ms-transition: -ms-transform 0.5s ease-out;
+        -o-transition: -o-transform 0.5s ease-out;
+        transition: transform 0.5s ease-out;
+
+        -webkit-transform: translateY(100%);
+        -moz-transform: translateY(100%);
+        -ms-transform: translateY(100%);
+        -o-transform: translateY(100%);
+        transform: translateY(100%);
+
+        background-color: rgba(0, 0, 0, 0.3);
+        border-top-right-radius: 10px;
+        border-top-left-radius: 10px;
+
+        font-family: 'Roboto', sans-serif;
+        color: rgb(200, 200, 200);
+        letter-spacing: 0.5px;
+        text-align: center;
+        line-height: 18px;
+        font-size: 13px;
+
+        position: absolute;
+        width: 600px;
+
+        padding: 15px 10px;
+        margin: 0 auto;
+        z-index: 1;
+
+        bottom: 0;
+        right: 0;
+        left: 0;
+      }
+
+      div.warning-label.visible {
+        -webkit-transform: none;
+        -moz-transform: none;
+        -ms-transform: none;
+        -o-transform: none;
+        transform: none;
       }
     </style>
   </head>
 
   <body>
-    <script type="text/javascript">
-      let experiment = new SoundParticles();
-      experiment.showStats();
+    <div class="music-label">
+      <span>Music by John Newman - Love Me Again</span>
+    </div>
 
-      window.addEventListener('resize', function (event) {
-        experiment.resize(window.innerWidth, window.innerHeight);
+    <div id="warning" class="warning-label">
+      <span>Please, be aware than this experiment is running in low performance mode (128 particles)<br>
+      'cause it seem that your GPU cannot handle its normal version (1024 particles).</span>
+    </div>
+
+    <script type="text/javascript">
+      function resizeHandler (event) {
+        window.experiment.resize(window.innerWidth, window.innerHeight);
+      }
+
+      function createExperiment (lowPerformance) {
+        window.experiment = new SoundParticles(lowPerformance);
+        window.addEventListener('resize', resizeHandler);
+
+        window.experiment.showStats();
+        window.experiment.startExperience();
+        window.experiment.resize(window.innerWidth, window.innerHeight);
+      }
+
+      window.addEventListener('error', function (message) {
+        setTimeout(function () {
+          document.getElementById('warning').classList.add('visible');
+        }, 1000);
+
+        window.removeEventListener('resize', resizeHandler);
+        window.experiment.destroy();
+
+        createExperiment(true);
       });
 
-      experiment.startExperience();
-      experiment.resize(window.innerWidth, window.innerHeight);
+      createExperiment();
     </script>
 
     <script>
@@ -65,7 +175,6 @@
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
       ga('create', 'UA-72866133-4', 'auto');
       ga('send', 'pageview');
     </script>

@@ -10,7 +10,7 @@ const MAX_DECIBELS = 255;
 
 export default class AudioReactive {
 
-  constructor(audio) {
+  constructor(audio, fftSize) {
     this._multipleSources = false;
     this._audioDuration = 0.0;
     this._isPlaying = false;
@@ -25,28 +25,7 @@ export default class AudioReactive {
 
     this._name = 'AudioReactive';
     this._audioSrc = audio;
-    this._init();
-  }
-
-  _init() {
-    let AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioContext = new AudioContext();
-    let audioContextAnalyser = audioContext.createAnalyser();
-
-    this._frequencyRange = audioContextAnalyser.frequencyBinCount;
-    this._getMaxAudioPower();
-  }
-
-  _getMaxAudioPower() {
-    let max = 0;
-
-    for (let i = 0; i < this._frequencyRange; i++) {
-      max += MAX_DECIBELS + i;
-    }
-
-    console.clear();
-    this.MAX_POWER = (max / this._frequencyRange - 1) / 100;
-    console.info(`Max audio power = ${this.MAX_POWER * 100}`);
+    this.fftSize = fftSize;
   }
 
   _loadAudioTrack(onPlay, study = false) {
@@ -118,12 +97,28 @@ export default class AudioReactive {
     this._startTime = Date.now();
     this._soundSource.analyser = analyser(this._soundSource);
 
+    this._soundSource.analyser.analyser.fftSize = this.fftSize || 2048;
+    this._frequencyRange = this._soundSource.analyser.analyser.frequencyBinCount;
+
+    this._getAverageAudioPower();
     this._soundSource.play();
     this._isPlaying = true;
 
     if (typeof onPlay === 'function') {
       onPlay();
     }
+  }
+
+  _getAverageAudioPower() {
+    let max = 0;
+
+    for (let i = 0; i < this._frequencyRange; i++) {
+      max += MAX_DECIBELS + i;
+    }
+
+    console.clear();
+    this.AVERAGE_POWER = (max / this._frequencyRange - 1) / 100;
+    console.info(`Average audio power = ${this.AVERAGE_POWER * 100}`);
   }
 
   _playAudioTracks(onPlay) {
@@ -172,7 +167,7 @@ export default class AudioReactive {
   }
 
   _getAnalysedValue(source) {
-    return this._getAverageFrequency(source) / this.MAX_POWER;
+    return this._getAverageFrequency(source) / this.AVERAGE_POWER;
   }
 
   _getFrequencyValuesFromSource(source) {
@@ -198,8 +193,8 @@ export default class AudioReactive {
   }
 
   setSongFrequencies(frequencies) {
-    this.SONG_MIN_POWER = frequencies.min / this.MAX_POWER;
-    this.SONG_MAX_POWER = frequencies.max / this.MAX_POWER;
+    this.SONG_MIN_POWER = frequencies.min / this.AVERAGE_POWER;
+    this.SONG_MAX_POWER = frequencies.max / this.AVERAGE_POWER;
     this.SONG_RANGE = this.SONG_MAX_POWER - this.SONG_MIN_POWER;
   }
 
@@ -248,7 +243,7 @@ export default class AudioReactive {
       // average += analysed[i] + i;
     }
 
-    // average = (average / analysed.length - 1) / this.MAX_POWER;
+    // average = (average / analysed.length - 1) / this.AVERAGE_POWER;
     // average -= this.SONG_MIN_POWER;
 
     // average = average * 100 / this.SONG_RANGE;

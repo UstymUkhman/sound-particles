@@ -7,18 +7,22 @@ import Stats from 'three/examples/js/libs/stats.min';
 import OrbitalCameraControl from './OrbitalCameraControl';
 
 const RAD = Math.PI / 180;
-const PARTICLES = 1024;
 
 export default class SoundParticles {
 
-  constructor() {
-    this._audio = new AudioReactive('assets/John Newman - Love Me Again.mp3');
+  constructor(lowPerformance = false) {
+    const fftSize = lowPerformance ? 256 : null;
+
+    this._audio = new AudioReactive('assets/John Newman - Love Me Again.mp3', fftSize);
     this._audio.setSongFrequencies({ min: 510.5, max: 621.5 });
 
     this._height = window.innerHeight;
     this._width = window.innerWidth;
 
+    this.PARTICLES = lowPerformance ? 128 : 1024;
     this._ratio = this._width / this._height;
+    this._low = lowPerformance;
+
     this._destroyed = false;
     this._startTime = null;
 
@@ -72,21 +76,24 @@ export default class SoundParticles {
     let minFrequencies = [];
     let maxFrequencies = [];
 
-    let particlesOffset = 2.0 / PARTICLES;
-    let random = Math.random() * PARTICLES;
+    let particlesOffset = 2.0 / this.PARTICLES;
+    let random = Math.random() * this.PARTICLES;
     let step = Math.PI * (5.0 - Math.sqrt(5));
 
-    for (let i = 0; i < PARTICLES; i++) {
+    const vertShader = this._low ? 'particles-low' : 'particles';
+    const distance = this._low ? 3.0 : 1.5;
+
+    for (let i = 0; i < this.PARTICLES; i++) {
       let minY = ((i * particlesOffset) - 1) + (particlesOffset / 2);
       const radius = Math.sqrt(1 - Math.pow(minY, 2));
-      const phi = ((i + random) % PARTICLES) * step;
+      const phi = ((i + random) % this.PARTICLES) * step;
 
       let minX = Math.cos(phi) * radius;
       let minZ = Math.sin(phi) * radius;
 
-      minX /= 1.5;
-      minY /= 1.5;
-      minZ /= 1.5;
+      minX /= distance;
+      minY /= distance;
+      minZ /= distance;
 
       const maxX = minX * 2.0;
       const maxY = minY * 2.0;
@@ -95,7 +102,7 @@ export default class SoundParticles {
       maxFrequencies = maxFrequencies.concat([maxX, maxY, maxZ]);
       minFrequencies = minFrequencies.concat([minX, minY, minZ]);
 
-      frequencies.push(i / PARTICLES);
+      frequencies.push(i / this.PARTICLES);
       indices.push(i);
     }
 
@@ -110,7 +117,7 @@ export default class SoundParticles {
       proj, view
     };
 
-    const vsRender = require('./shaders/particles.vert');
+    const vsRender = require(`./shaders/${vertShader}.vert`);
     const fsRender = require('./shaders/particles.frag');
 
     const particlesGeometry = new PIXI.mesh.Geometry()
