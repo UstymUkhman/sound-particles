@@ -9,6 +9,7 @@ const analyser = require('web-audio-analyser');
 const MAX_DECIBELS = 255;
 
 export default class AudioReactive {
+
   constructor(audio, fftSize) {
     this._multipleSources = false;
     this._audioDuration = 0.0;
@@ -117,8 +118,7 @@ export default class AudioReactive {
 
     console.clear();
     this.AVERAGE_POWER = (max / this._frequencyRange - 1) / 100;
-    console.info(`Average audio power  = ${this.AVERAGE_POWER * 100}`);
-    this._setFrequenciesRange();
+    console.info(`Average audio power = ${this.AVERAGE_POWER * 100}`);
   }
 
   _playAudioTracks(onPlay) {
@@ -182,24 +182,20 @@ export default class AudioReactive {
   }
 
   _setAudioValues() {
-    this._frequencyRange = this._soundSource.analyser.analyser.frequencyBinCount;
-    this.setSongFrequencies(this._minFrequency, this._maxFrequency);
-    this._getAverageAudioPower();
+    this.setSongFrequencies({
+      min: this._minFrequency,
+      max: this._maxFrequency
+    });
 
     console.info(`Song min frequency   = ${this._minFrequency}`);
     console.info(`Song max frequency   = ${this._maxFrequency}`);
     console.info(`Song frequency range = ${this.SONG_RANGE}`);
   }
 
-  _setFrequenciesRange() {
-    this.SONG_MIN_POWER /= this.AVERAGE_POWER;
-    this.SONG_MAX_POWER /= this.AVERAGE_POWER;
+  setSongFrequencies(frequencies) {
+    this.SONG_MIN_POWER = frequencies.min / this.AVERAGE_POWER;
+    this.SONG_MAX_POWER = frequencies.max / this.AVERAGE_POWER;
     this.SONG_RANGE = this.SONG_MAX_POWER - this.SONG_MIN_POWER;
-  }
-
-  setSongFrequencies(min, max) {
-    this.SONG_MIN_POWER = min;
-    this.SONG_MAX_POWER = max;
   }
 
   play(onReady) {
