@@ -6,7 +6,7 @@
 // import vertParticles from '@/glsl/particles.vert';
 // import fragParticles from '@/glsl/particles.frag';
 
-// import CameraControl from '@/CameraControl';
+// import CameraControls from '@/CameraControls';
 // import AudioReactive from '@/AudioReactive';
 
 // import { mat4 } from 'gl-matrix';
