@@ -44,7 +44,7 @@ div#label {
   font-size: 13px;
 
   position: absolute;
-  z-index: 2;
+  z-index: 1;
 
   right: 0;
   top: 0;
@@ -80,6 +80,7 @@ button#start {
   height: 35px;
   width: 150px;
   outline: 0;
+  z-index: 2;
 
   bottom: 0;
   right: 0;
@@ -95,12 +96,13 @@ button#start:hover {
 button#start.hidden {
   pointer-events: none;
   opacity: 0;
+  z-index: 0;
 }
 
 canvas {
   position: absolute;
   display: block;
-  z-index: 2;
+  z-index: 1;
 
   height: 100%;
   width: 100%;

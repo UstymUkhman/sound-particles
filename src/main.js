@@ -1,9 +1,13 @@
 import SoundParticles from '@/SoundParticles';
 
-const particles = new SoundParticles();
 const start = document.getElementById('start');
 
-// window.addEventListener('resize', particles.onResize.bind(particles));
+const particles = new SoundParticles(
+  document.getElementById('particles'),
+  '/assets/music.mp3'
+);
+
+window.addEventListener('resize', particles.onResize.bind(particles));
 
 start.addEventListener('click', () => {
   document.getElementById('label').classList.remove('hidden');
