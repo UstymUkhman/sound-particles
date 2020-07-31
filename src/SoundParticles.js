@@ -11,23 +11,16 @@ import AudioReactive from '@/AudioReactive';
 
 import { mat4 } from 'gl-matrix';
 
-const RESOLUTION = window.devicePixelRatio || 1;
 const RAD = Math.PI / 180;
 const PARTICLES = 1024;
 
 export default class SoundParticles {
   constructor (track) {
     this.audio = new AudioReactive(track);
+    this.ratio = window.innerWidth / window.innerHeight;
     this.audio.setSongFrequencies({ min: 510.5, max: 621.5 });
 
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    this.ratio = this.width / this.height;
-
     this.runEasing = false;
-    this.startTime = null;
-
-    this.audio.load();
     this.init();
   }
 
@@ -38,9 +31,9 @@ export default class SoundParticles {
     mat4.perspective(this.proj, 45 * RAD, this.ratio, 0.1, 100);
 
     this.app = new Application({
-      resolution: RESOLUTION,
-      height: this.height,
-      width: this.width,
+      resolution: window.devicePixelRatio || 1,
+      height: window.innerHeight,
+      width: window.innerWidth,
       transparent: true,
       antialias: true
     });
@@ -51,6 +44,7 @@ export default class SoundParticles {
 
     this.createBackground();
     this.createParticles();
+    this.audio.load();
   }
 
   createBackground () {
@@ -151,8 +145,10 @@ export default class SoundParticles {
       this.backgroundUniforms.dark = false;
       this.particleUniforms.easing = 0.0;
       this.runEasing = false;
+
     } else if (this.runEasing && progTime > 44.6) {
       this.particleUniforms.easing = 44.6;
+
     } else if (progTime > 40.8 && progTime < 48.5) {
       this.particleUniforms.easing = -40.8;
       this.runEasing = true;
@@ -166,16 +162,14 @@ export default class SoundParticles {
     this.app.render();
   }
 
-  onResize () {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+  resize () {
+    this.app.view.style.height = `${window.innerHeight}px`;
+    this.app.view.style.width = `${window.innerWidth}px`;
 
-    this.ratio = this.width / this.height;
+    this.ratio = window.innerWidth / window.innerHeight;
     this.backgroundUniforms.aspect = this.ratio;
 
-    this.app.view.style.width = `${this.width}px`;
-    this.app.view.style.height = `${this.height}px`;
-
     mat4.perspective(this.proj, 45 * RAD, this.ratio, 0.1, 100);
+    this.app.renderer.resize(window.innerWidth, window.innerHeight);
   }
 }
