@@ -1,8 +1,9 @@
-/* ********************************************************* *
- * Frequency Bin Index :  0 (i)  |    800 (i)  |  1.024 (i)  *
- * Frequency Value     : 20 (Hz) | 20.000 (Hz) | 25.600 (Hz) *
- * ********************************************************* *
- *                                                           */
+/*                                                               *
+ * |-----------------------------------------------------------| *
+ * | Frequency Bin Index :  0 (i)  |    800 (i)  |  1.024 (i)  | *
+ * | Frequency Value     : 20 (Hz) | 20.000 (Hz) | 25.600 (Hz) | *
+ * |-----------------------------------------------------------| *
+ */
 
 import analyser from 'web-audio-analyser';
 
@@ -10,201 +11,191 @@ const MAX_DECIBELS = 255;
 
 export default class AudioReactive {
   constructor (audio, fftSize) {
-    this.multipleSources = false;
-    this.longestSource = null;
-    this.audioDuration = 0.0;
-    this.soundSource = null;
-    this.soundSources = {};
-
-    this.isPlaying = false;
-    this.fftSize = fftSize;
-    this.startTime = null;
-    this.audioSrc = audio;
+    this._multipleSources = false;
+    this._audioDuration = 0.0;
+    this._isPlaying = false;
     this.isReady = false;
+
+    this._longestSource = null;
+    this._soundSource = null;
+    this._soundSources = {};
+
+    this._startTime = null;
+    this._pauseTime = null;
+
+    this._name = 'AudioReactive';
+    this._audioSrc = audio;
+    this.fftSize = fftSize;
   }
 
-  loadAudioTracks () {
-    const tracks = Object.keys(this.audioSrc).length;
+  _loadAudioTrack (study = false) {
+    let onAudioEnded = study ? this._setAudioValues.bind(this) : this._onAudioTrackEnded.bind(this);
 
+    this._multipleSources = typeof this._audioSrc === 'object';
+
+    if (this._multipleSources) {
+      this._loadAudioTracks();
+      return;
+    }
+
+    if (this._soundSource === null) {
+      this._soundSource = document.createElement('audio');
+    }
+
+    this._soundSource.autoplay = false;
+    this._soundSource.src = this._audioSrc;
+    this._soundSource.addEventListener('ended', onAudioEnded);
+
+    this._soundSource.addEventListener('canplay', () => {
+      if (!this._soundSource) return;
+
+      this._audioDuration = this._soundSource.duration;
+      this._soundSource.loaded = true;
+      this._soundSource.muted = false;
+      this._soundSource.volume = 1.0;
+      this.isReady = true;
+
+      if (study) {
+        this._soundSource.analyser = analyser(this._soundSource);
+        this._soundSource.play();
+        this._studyAudio();
+      }
+    });
+  }
+
+  _loadAudioTracks () {
+    const tracks = Object.keys(this._audioSrc).length;
     let audioDuration = 0;
     let sourceIndex = 0;
 
-    for (const source in this.audioSrc) {
-      this.soundSources[source] = document.createElement('audio');
-      this.soundSources[source].src = this.audioSrc[source];
-      this.soundSources[source].autoplay = false;
+    for (let source in this._audioSrc) {
+      this._soundSources[source] = document.createElement('audio');
+      this._soundSources[source].src = this._audioSrc[source];
+      this._soundSources[source].autoplay = false;
 
-      this.soundSources[source].addEventListener('canplay', () => {
-        this.soundSources[source].loaded = true;
-        this.soundSources[source].muted = false;
-        this.soundSources[source].volume = 1.0;
+      this._soundSources[source].addEventListener('canplay', () => {
+        this._soundSources[source].loaded = true;
+        this._soundSources[source].muted = false;
+        this._soundSources[source].volume = 1.0;
         sourceIndex++;
 
-        if (this.soundSources[source].duration > audioDuration) {
-          audioDuration = this.soundSources[source].duration;
-          this.longestSource = source;
+        if (this._soundSources[source].duration > audioDuration) {
+          audioDuration = this._soundSources[source].duration;
+          this._longestSource = source;
         }
 
         if (sourceIndex === tracks) {
-          this.soundSources[this.longestSource].addEventListener(
-            'ended', this.onAudioTrackEnded.bind(this)
-          );
+          this._soundSources[this._longestSource].addEventListener('ended', this._onAudioTrackEnded.bind(this));
 
-          this.audioDuration = audioDuration;
-          this.playAudioTracks();
+          this._audioDuration = audioDuration;
+          this._playAudioTracks();
           this.isReady = true;
         }
       });
     }
   }
 
-  loadAudioTrack (study = false) {
-    this.multipleSources = typeof this.audioSrc === 'object';
+  _playAudioTrack (onPlay) {
+    this._startTime = Date.now();
+    this._soundSource.analyser = analyser(this._soundSource);
 
-    if (this.multipleSources) {
-      this.loadAudioTracks();
-    }
+    this._soundSource.analyser.analyser.fftSize = this.fftSize || 2048;
+    this._frequencyRange = this._soundSource.analyser.analyser.frequencyBinCount;
 
-    if (!this.soundSource) {
-      this.soundSource = document.createElement('audio');
-    }
-
-    this.soundSource.addEventListener('ended', !study ?
-      this.onAudioTrackEnded.bind(this) :
-      this.setAudioValues.bind(this)
-    );
-
-    this.soundSource.src = this.audioSrc;
-    this.soundSource.autoplay = false;
-
-    this.soundSource.addEventListener('canplay', () => {
-      if (!this.soundSource) return;
-
-      this.audioDuration = this.soundSource.duration;
-      this.soundSource.loaded = true;
-      this.soundSource.muted = false;
-      this.soundSource.volume = 1.0;
-      this.isReady = true;
-
-      if (study) {
-        this.soundSource.analyser = analyser(this.soundSource);
-        this.soundSource.play();
-        this.studyAudio();
-      }
-    });
-  }
-
-  playAudioTracks (onPlay) {
-    for (const source in this.soundSources) {
-      this.soundSources[source].analyser = analyser(this.soundSources[source]);
-      this.soundSources[source].play();
-    }
-
-    this.startTime = Date.now();
-    this.isPlaying = true;
+    this._getAverageAudioPower();
+    this._soundSource.play();
+    this._isPlaying = true;
 
     if (typeof onPlay === 'function') {
       onPlay();
     }
   }
 
-  playAudioTrack (onPlay) {
-    this.startTime = Date.now();
-    this.soundSource.analyser = analyser(this.soundSource);
-
-    this.soundSource.analyser.analyser.fftSize = this.fftSize || 2048;
-    this.frequencyRange = this.soundSource.analyser.analyser.frequencyBinCount;
-
-    this.getAverageAudioPower();
-    this.soundSource.play();
-    this.isPlaying = true;
-
-    if (typeof onPlay === 'function') {
-      onPlay();
-    }
-  }
-
-  getFrequencyValuesFromSource (source) {
-    return this.soundSources[source].analyser.frequencies().map(
-      frequency => frequency / this.frequencyRange
-    );
-  }
-
-  getFrequencyValues (source = null) {
-    if (source) return this.getFrequencyValuesFromSource(source);
-
-    return this.soundSource.analyser.frequencies().map(
-      frequency => frequency / this.frequencyRange
-    );
-  }
-
-  getAverageFrequency (source = null) {
-    const soundSource = source ? this.soundSources[source] : this.soundSource;
-    const frequencies = soundSource.analyser.frequencies();
-
-    let sum = frequencies.reduce(
-      (sum, frequency, index) => sum + frequency + index
-    );
-
-    sum /= frequencies.length - 1;
-    return sum;
-  }
-
-  getAverageAudioPower () {
+  _getAverageAudioPower () {
     let max = 0;
 
-    for (let i = 0; i < this.frequencyRange; i++) {
+    for (let i = 0; i < this._frequencyRange; i++) {
       max += MAX_DECIBELS + i;
     }
 
-    this.AVERAGE_POWER = (max / this.frequencyRange - 1) / 100;
+    this.AVERAGE_POWER = (max / this._frequencyRange - 1) / 100;
     console.info(`Average audio power  = ${this.AVERAGE_POWER * 100}`);
-    this.setFrequenciesRange();
+    this._setFrequenciesRange();
   }
 
-  getAudioProgress () {
-    return +(!this.multipleSources ?
-      this.soundSource.currentTime * 100 / this.audioDuration :
-      this.soundSources[this.longestSource].currentTime * 100 / this.audioDuration
-    ).toFixed(2);
+  _playAudioTracks (onPlay) {
+    for (let source in this._soundSources) {
+      this._soundSources[source].analyser = analyser(this._soundSources[source]);
+      this._soundSources[source].play();
+    }
+
+    this._startTime = Date.now();
+    this._isPlaying = true;
+
+    if (typeof onPlay === 'function') {
+      onPlay();
+    }
   }
 
-  getAnalysedValue (source) {
-    return this.getAverageFrequency(source) / this.AVERAGE_POWER;
+  _onAudioTrackEnded () {
+
   }
 
-  getAverageValue (source = null) {
-    if (source) return this.getAnalysedValue(source);
-    let value = this.getAnalysedValue();
+  _studyAudio () {
+    let frequency = this._getAverageFrequency();
 
-    value -= this.SONG_MIN_POWER;
-    value *= 100 / this.SONG_RANGE;
+    if (this._maxFrequency < frequency) {
+      this._maxFrequency = frequency;
+    }
 
-    return Math.round(value) / 100;
+    if (this._minFrequency > frequency) {
+      this._minFrequency = frequency;
+    }
+
+    this.frame = requestAnimationFrame(this._studyAudio.bind(this));
   }
 
-  getAudioValues () {
-    if (this.multipleSources) return;
+  _getAverageFrequency (source = null) {
+    const soundSource = source ? this._soundSources[source] : this._soundSource;
+    let freq = soundSource.analyser.frequencies();
+    let sum = 0;
 
-    this.minFrequency = Infinity;
-    this.maxFrequency = 0;
+    for (let i = 0; i < freq.length; i++) {
+      sum += freq[i] + i;
+    }
 
-    this.loadAudioTrack(true);
+    sum = sum / freq.length - 1;
+    return sum;
   }
 
-  setAudioValues () {
-    this.frequencyRange = this.soundSource.analyser.analyser.frequencyBinCount;
-    this.setSongFrequencies(this.minFrequency, this.maxFrequency);
+  _getAnalysedValue (source) {
+    return this._getAverageFrequency(source) / this.AVERAGE_POWER;
+  }
+
+  _getFrequencyValuesFromSource (source) {
+    let analysed = this._soundSources[source].analyser.frequencies();
+    let frequencies = [];
+
+    for (let i = 0; i < analysed.length; i++) {
+      frequencies.push(analysed[i] / this._frequencyRange);
+    }
+
+    return frequencies;
+  }
+
+  _setAudioValues () {
+    this._frequencyRange = this._soundSource.analyser.analyser.frequencyBinCount;
+    this.setSongFrequencies(this._minFrequency, this._maxFrequency);
 
     cancelAnimationFrame(this.frame);
-    this.getAverageAudioPower();
+    this._getAverageAudioPower();
 
-    console.info(`Song min frequency   = ${this.minFrequency}`);
-    console.info(`Song max frequency   = ${this.maxFrequency}`);
+    console.info(`Song min frequency   = ${this._minFrequency}`);
+    console.info(`Song max frequency   = ${this._maxFrequency}`);
     console.info(`Song frequency range = ${this.SONG_RANGE}`);
   }
 
-  setFrequenciesRange () {
+  _setFrequenciesRange () {
     this.SONG_MIN_POWER /= this.AVERAGE_POWER;
     this.SONG_MAX_POWER /= this.AVERAGE_POWER;
     this.SONG_RANGE = this.SONG_MAX_POWER - this.SONG_MIN_POWER;
@@ -215,31 +206,82 @@ export default class AudioReactive {
     this.SONG_MAX_POWER = max;
   }
 
-  studyAudio () {
-    const frequency = this.getAverageFrequency();
-
-    if (this.maxFrequency < frequency) {
-      this.maxFrequency = frequency;
-    }
-
-    if (this.minFrequency > frequency) {
-      this.minFrequency = frequency;
-    }
-
-    this.frame = requestAnimationFrame(this.studyAudio.bind(this));
-  }
-
   load () {
-    !this.multipleSources ?
-      this.loadAudioTrack() :
-      this.loadAudioTracks();
+    if (this._multipleSources) {
+      this._loadAudioTracks();
+    } else {
+      this._loadAudioTrack();
+    }
   }
 
   play (onPlay) {
-    !this.multipleSources ?
-      this.playAudioTrack(onPlay) :
-      this.playAudioTracks(onPlay);
+    if (this._multipleSources) {
+      this._playAudioTracks(onPlay);
+    } else {
+      this._playAudioTrack(onPlay);
+    }
   }
 
-  onAudioTrackEnded () { }
+  getAudioValues () {
+    if (this._multipleSources) {
+      return;
+    }
+
+    this._maxFrequency = 0;
+    this._minFrequency = Infinity;
+    this._loadAudioTrack(true);
+  }
+
+  getAverageValue (source = null) {
+    if (source) {
+      return this._getAnalysedValue(source);
+    }
+
+    let value = this._getAnalysedValue();
+
+    value -= this.SONG_MIN_POWER;
+    value = value * 100 / this.SONG_RANGE;
+
+    return Math.round(value) / 100;
+  }
+
+  getFrequencyValues (source = null) {
+    if (source) {
+      return this._getFrequencyValuesFromSource(source);
+    }
+
+    let analysed = this._soundSource.analyser.frequencies();
+    let frequencies = [];
+    // let average = 0
+
+    for (let i = 0; i < analysed.length; i++) {
+      frequencies.push(analysed[i] / this._frequencyRange);
+      // average += analysed[i] + i
+    }
+
+    // average = (average / analysed.length - 1) / this.AVERAGE_POWER
+    // average -= this.SONG_MIN_POWER
+
+    // average = average * 100 / this.SONG_RANGE
+    // average = Math.round(average) / 100
+
+    return frequencies;
+
+    /* return {
+      frequencies: frequencies,
+      averageValue: average
+    } */
+  }
+
+  getAudioProgress () {
+    let percent = 0.0;
+
+    if (this._multipleSources) {
+      percent = this._soundSources[this._longestSource].currentTime * 100 / this._audioDuration;
+    } else {
+      percent = this._soundSource.currentTime * 100 / this._audioDuration;
+    }
+
+    return +percent.toFixed(2);
+  }
 }

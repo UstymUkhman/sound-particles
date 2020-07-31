@@ -37,15 +37,14 @@ div#label {
   background-color: rgba(0, 0, 0, 0.25);
   font-family: 'Roboto', sans-serif;
   border-bottom-left-radius: 10px;
+  transition: opacity 0.5s 0.5s;
 
-  transition: opacity 0.5s;
+  position: absolute;
   padding: 15px 10px;
   color: #00cc00;
   font-size: 13px;
 
-  position: absolute;
-  z-index: 1;
-
+  z-index: 2;
   right: 0;
   top: 0;
 }
@@ -54,15 +53,37 @@ div#label.hidden {
   opacity: 0;
 }
 
+div.container {
+  background-color: #000000;
+  transition: opacity 0.5s;
+
+  position: absolute;
+  display: block;
+
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+
+  padding: 0;
+  margin: 0;
+
+  left: 0;
+  top: 0;
+}
+
+div.container.hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
 button#start {
-  transition: background-color 0.5s, color 0.5s, opacity 0.5s;
+  transition: background-color 0.5s, color 0.5s;
   font-family: monospace, sans-serif;
   background-color: #000000;
   border: solid 1px #00cc00;
   text-transform: uppercase;
 
   text-decoration: none;
-  pointer-events: all;
   letter-spacing: 2px;
   text-align: center;
 
@@ -91,12 +112,6 @@ button#start {
 button#start:hover {
   background-color: #00cc00;
   color: #000000;
-}
-
-button#start.hidden {
-  pointer-events: none;
-  opacity: 0;
-  z-index: 0;
 }
 
 canvas {
