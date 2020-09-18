@@ -1,4 +1,4 @@
-# [sound-particles](http://54.93.165.244/experiments/sound-particles) #
+# [sound-particles](http://35.158.218.205/experiments/sound-particles/) #
 
 >  PixiJS audio reactive particles
 
