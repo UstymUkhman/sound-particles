@@ -1,4 +1,4 @@
-# [sound-particles](http://35.158.218.205/experiments/sound-particles/) #
+# [sound-particles](https://ustymukhman.github.io/sound-particles/public/) #
 
 >  PixiJS audio reactive particles
 
